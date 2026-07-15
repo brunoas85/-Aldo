@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@theme {
+  --color-aldo-bien: #10b981;
+  --color-aldo-bien-soft: #d1fae5;
+  --color-aldo-alerta: #f59e0b;
+  --color-aldo-alerta-soft: #fef3c7;
+  --color-aldo-critico: #ef4444;
+  --color-aldo-critico-soft: #fee2e2;
+  --color-aldo-ink: #171321;
+  --color-aldo-surface: #faf9fc;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  background: var(--color-aldo-surface);
+}
