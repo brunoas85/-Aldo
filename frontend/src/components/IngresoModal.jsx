@@ -4,16 +4,23 @@ import { X } from 'lucide-react'
 export default function IngresoModal({ open, onSave, onClose }) {
   const [monto, setMonto] = useState('')
   const [descripcion, setDescripcion] = useState('')
+  const [enviando, setEnviando] = useState(false)
 
   if (!open) return null
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     const valor = Number(monto)
-    if (!valor) return
-    await onSave({ monto: valor, descripcion: descripcion.trim() || null })
-    setMonto('')
-    setDescripcion('')
+    if (!(valor > 0) || enviando) return
+    setEnviando(true)
+    try {
+      if (await onSave({ monto: valor, descripcion: descripcion.trim() || null })) {
+        setMonto('')
+        setDescripcion('')
+      }
+    } finally {
+      setEnviando(false)
+    }
   }
 
   return (
@@ -33,6 +40,7 @@ export default function IngresoModal({ open, onSave, onClose }) {
             inputMode="decimal"
             autoFocus
             required
+            min="0"
             value={monto}
             onChange={(e) => setMonto(e.target.value)}
             placeholder="$ 0"
@@ -51,8 +59,12 @@ export default function IngresoModal({ open, onSave, onClose }) {
           />
         </label>
 
-        <button type="submit" className="w-full rounded-xl bg-emerald-500 py-3 font-semibold text-white active:bg-emerald-600">
-          Sumar ingreso
+        <button
+          type="submit"
+          disabled={enviando}
+          className="w-full rounded-xl bg-emerald-500 py-3 font-semibold text-white active:bg-emerald-600 disabled:opacity-40"
+        >
+          {enviando ? 'Guardando...' : 'Sumar ingreso'}
         </button>
       </form>
     </div>

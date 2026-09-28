@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Clock3, Settings } from 'lucide-react'
+import { AlertCircle, Clock3, Settings, X } from 'lucide-react'
 import Dashboard from './components/Dashboard'
 import ExpenseInput from './components/ExpenseInput'
 import ConfigWizard from './components/ConfigWizard'
@@ -26,54 +26,71 @@ function sumarDias(iso, n) {
   return d.toISOString().slice(0, 10)
 }
 
+function mensajeDeError(err) {
+  if (!err.response) return 'No me pude conectar con el servidor. ¿Está prendido el backend?'
+  if (err.response.status === 422) return 'Revisá los datos: los montos tienen que ser mayores a cero.'
+  const detail = err.response.data?.detail
+  return typeof detail === 'string' ? detail : 'Algo salió mal. Probá de nuevo.'
+}
+
 function App() {
   const [dashboard, setDashboard] = useState(null)
+  const [cargando, setCargando] = useState(true)
+  const [error, setError] = useState(null)
   const [showConfig, setShowConfig] = useState(false)
   const [showIngreso, setShowIngreso] = useState(false)
   const [showHistorial, setShowHistorial] = useState(false)
 
-  useEffect(() => {
+  const cargarDashboard = () => {
+    setCargando(true)
+    setError(null)
     getDashboard()
       .then(setDashboard)
-      .catch(() => setShowConfig(true))
-  }, [])
+      .catch((err) => {
+        // Solo un 404 significa "todavía no configuraste nada"; cualquier otro error
+        // (backend caído, 500) no tiene que mandarte a cargar todo de nuevo.
+        if (err.response?.status === 404) setShowConfig(true)
+        else setError(mensajeDeError(err))
+      })
+      .finally(() => setCargando(false))
+  }
+
+  useEffect(cargarDashboard, [])
+
+  // Ejecuta una llamada que devuelve el dashboard. Devuelve true si salió bien, así
+  // los componentes solo limpian sus inputs cuando el dato quedó guardado.
+  const conDashboard = async (llamada) => {
+    try {
+      setDashboard(await llamada())
+      setError(null)
+      return true
+    } catch (err) {
+      setError(mensajeDeError(err))
+      return false
+    }
+  }
 
   const handleSaveConfig = async (config) => {
-    const data = await saveConfig(config)
-    setDashboard(data)
-    setShowConfig(false)
+    const ok = await conDashboard(() => saveConfig(config))
+    if (ok) setShowConfig(false)
+    return ok
   }
 
-  const handleAddGasto = async (monto) => {
-    const data = await registrarGasto({ monto })
-    setDashboard(data)
-  }
+  const handleAddGasto = (monto) => conDashboard(() => registrarGasto({ monto }))
 
-  const handleEditGasto = async (id, payload) => {
-    const data = await editarGasto(id, payload)
-    setDashboard(data)
-  }
+  const handleEditGasto = (id, payload) => conDashboard(() => editarGasto(id, payload))
 
-  const handleDeleteGasto = async (id) => {
-    const data = await borrarGasto(id)
-    setDashboard(data)
-  }
+  const handleDeleteGasto = (id) => conDashboard(() => borrarGasto(id))
 
   const handleAddIngreso = async (payload) => {
-    const data = await registrarIngreso(payload)
-    setDashboard(data)
-    setShowIngreso(false)
+    const ok = await conDashboard(() => registrarIngreso(payload))
+    if (ok) setShowIngreso(false)
+    return ok
   }
 
-  const handleEditIngreso = async (id, payload) => {
-    const data = await editarIngreso(id, payload)
-    setDashboard(data)
-  }
+  const handleEditIngreso = (id, payload) => conDashboard(() => editarIngreso(id, payload))
 
-  const handleDeleteIngreso = async (id) => {
-    const data = await borrarIngreso(id)
-    setDashboard(data)
-  }
+  const handleDeleteIngreso = (id) => conDashboard(() => borrarIngreso(id))
 
   const hoy = dashboard
     ? sumarDias(dashboard.inicio_ciclo, dashboard.dias_totales_ciclo - dashboard.dias_restantes)
@@ -87,6 +104,27 @@ function App() {
 
   return (
     <main className="flex min-h-svh flex-col items-center gap-6 px-4 pb-32 pt-10">
+      {error && (
+        <div
+          role="alert"
+          className="fixed inset-x-4 top-4 z-[60] mx-auto flex max-w-sm items-start gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 shadow-md ring-1 ring-red-100"
+        >
+          <AlertCircle size={18} className="mt-0.5 shrink-0" />
+          <p className="flex-1">{error}</p>
+          {!dashboard && !cargando ? (
+            <button type="button" onClick={cargarDashboard} className="font-semibold underline">
+              Reintentar
+            </button>
+          ) : (
+            <button type="button" onClick={() => setError(null)} aria-label="Cerrar" className="text-red-400">
+              <X size={16} />
+            </button>
+          )}
+        </div>
+      )}
+
+      {cargando && !dashboard && <p className="mt-20 text-sm text-gray-400">Cargando...</p>}
+
       {dashboard && (
         <>
           <Dashboard

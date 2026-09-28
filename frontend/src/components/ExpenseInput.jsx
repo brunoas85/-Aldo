@@ -3,13 +3,18 @@ import { Plus } from 'lucide-react'
 
 export default function ExpenseInput({ onAdd, onOpenIngreso }) {
   const [monto, setMonto] = useState('')
+  const [enviando, setEnviando] = useState(false)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     const valor = Number(monto)
-    if (!valor) return
-    onAdd(valor)
-    setMonto('')
+    if (!(valor > 0) || enviando) return
+    setEnviando(true)
+    try {
+      if (await onAdd(valor)) setMonto('')
+    } finally {
+      setEnviando(false)
+    }
   }
 
   return (
@@ -18,6 +23,7 @@ export default function ExpenseInput({ onAdd, onOpenIngreso }) {
         <input
           type="number"
           inputMode="decimal"
+          min="0"
           value={monto}
           onChange={(e) => setMonto(e.target.value)}
           placeholder="¿Cuánto gastaste?"
@@ -25,7 +31,8 @@ export default function ExpenseInput({ onAdd, onOpenIngreso }) {
         />
         <button
           type="submit"
-          className="rounded-xl bg-gray-900 px-6 py-4 text-lg font-semibold text-white active:bg-gray-700"
+          disabled={enviando}
+          className="rounded-xl bg-gray-900 px-6 py-4 text-lg font-semibold text-white active:bg-gray-700 disabled:opacity-50"
         >
           Restar
         </button>

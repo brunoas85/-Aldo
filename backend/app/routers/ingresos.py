@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from .. import models, schemas
 from ..deps import get_db, get_usuario_actual
-from ..logic import calcular_dashboard, obtener_config_actual
+from ..logic import asegurar_config_actual, calcular_dashboard
 
 router = APIRouter(prefix="/api/ingresos", tags=["ingresos"])
 
@@ -39,7 +39,7 @@ def registrar_ingreso(
     usuario: models.Usuario = Depends(get_usuario_actual),
 ):
     hoy = date.today()
-    config = obtener_config_actual(db, usuario, hoy)
+    config = asegurar_config_actual(db, usuario, hoy)
     if config is None:
         raise HTTPException(status_code=404, detail="Todavía no configuraste tu mes")
 

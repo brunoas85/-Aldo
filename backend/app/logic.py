@@ -57,6 +57,42 @@ def obtener_config_actual(db: Session, usuario: models.Usuario, hoy: date | None
     )
 
 
+def asegurar_config_actual(db: Session, usuario: models.Usuario, hoy: date | None = None):
+    """Devuelve la config del ciclo actual. Si arrancó un ciclo nuevo y todavía no hay
+    config, hereda la del último ciclo configurado (ingresos, meta y gastos fijos) para
+    no obligar al usuario a cargar todo de nuevo. Devuelve None si nunca configuró nada."""
+    hoy = hoy or date.today()
+    config = obtener_config_actual(db, usuario, hoy)
+    if config is not None:
+        return config
+
+    anterior = (
+        db.query(models.ConfiguracionMensual)
+        .filter_by(usuario_id=usuario.id)
+        .order_by(models.ConfiguracionMensual.anio.desc(), models.ConfiguracionMensual.mes.desc())
+        .first()
+    )
+    if anterior is None:
+        return None
+
+    inicio, _fin = calcular_ciclo(hoy, usuario.dia_cobro)
+    config = models.ConfiguracionMensual(
+        usuario_id=usuario.id,
+        anio=inicio.year,
+        mes=inicio.month,
+        ingresos_mensuales=anterior.ingresos_mensuales,
+        meta_ahorro=anterior.meta_ahorro,
+        gastos_fijos_detalle=[
+            models.GastoFijo(nombre=g.nombre, monto=g.monto, categoria=g.categoria)
+            for g in anterior.gastos_fijos_detalle
+        ],
+    )
+    db.add(config)
+    db.commit()
+    db.refresh(config)
+    return config
+
+
 def generar_sugerencias(
     hoy: date,
     dias_transcurridos: int,
@@ -111,7 +147,7 @@ def generar_sugerencias(
 
 def calcular_dashboard(db: Session, usuario: models.Usuario, hoy: date | None = None) -> dict | None:
     hoy = hoy or date.today()
-    config = obtener_config_actual(db, usuario, hoy)
+    config = asegurar_config_actual(db, usuario, hoy)
     if config is None:
         return None
 

@@ -1,56 +1,53 @@
 from datetime import date
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class GastoFijoIn(BaseModel):
-    nombre: str
-    monto: float
+    nombre: str = Field(min_length=1)
+    monto: float = Field(gt=0)
     categoria: str | None = None
 
 
 class GastoFijoOut(GastoFijoIn):
-    id: int
+    model_config = ConfigDict(from_attributes=True)
 
-    class Config:
-        from_attributes = True
+    id: int
 
 
 class ConfigIn(BaseModel):
-    ingresos_mensuales: float
-    dia_cobro: int = 1
-    meta_ahorro: float = 0
+    ingresos_mensuales: float = Field(gt=0)
+    dia_cobro: int = Field(default=1, ge=1, le=31)
+    meta_ahorro: float = Field(default=0, ge=0)
     gastos_fijos: list[GastoFijoIn] = []
 
 
 class GastoIn(BaseModel):
-    monto: float
+    monto: float = Field(gt=0)
     descripcion: str | None = None
 
 
 class GastoOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     fecha: date
     monto: float
     descripcion: str | None
 
-    class Config:
-        from_attributes = True
-
 
 class IngresoIn(BaseModel):
-    monto: float
+    monto: float = Field(gt=0)
     descripcion: str | None = None
 
 
 class IngresoOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     fecha: date
     monto: float
     descripcion: str | None
-
-    class Config:
-        from_attributes = True
 
 
 class DashboardOut(BaseModel):

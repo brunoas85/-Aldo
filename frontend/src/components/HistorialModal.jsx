@@ -15,9 +15,8 @@ function MovimientoRow({ movimiento, onEdit, onDelete }) {
 
   const guardar = async () => {
     const valor = Number(monto)
-    if (!valor) return
-    await onEdit(movimiento.id, { monto: valor, descripcion: descripcion.trim() || null })
-    setEditando(false)
+    if (!(valor > 0)) return
+    if (await onEdit(movimiento.id, { monto: valor, descripcion: descripcion.trim() || null })) setEditando(false)
   }
 
   if (editando) {
