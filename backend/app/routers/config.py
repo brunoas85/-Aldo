@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from .. import models, schemas
-from ..deps import get_db, get_usuario_actual
-from ..logic import calcular_ciclo, calcular_dashboard, obtener_config_actual
+from ..deps import dashboard_o_404, get_db, get_hoy, get_usuario_actual
+from ..logic import calcular_ciclo, obtener_config_actual
 
 router = APIRouter(prefix="/api/config", tags=["config"])
 
@@ -15,10 +15,10 @@ def guardar_config(
     payload: schemas.ConfigIn,
     db: Session = Depends(get_db),
     usuario: models.Usuario = Depends(get_usuario_actual),
+    hoy: date = Depends(get_hoy),
 ):
     usuario.dia_cobro = payload.dia_cobro
 
-    hoy = date.today()
     inicio, _fin = calcular_ciclo(hoy, usuario.dia_cobro)
 
     config = obtener_config_actual(db, usuario, hoy)
@@ -36,4 +36,4 @@ def guardar_config(
     ]
     db.commit()
 
-    return calcular_dashboard(db, usuario, hoy)
+    return dashboard_o_404(db, usuario, hoy)

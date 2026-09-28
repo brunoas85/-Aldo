@@ -1,12 +1,19 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.database import Base, engine
+from app.migraciones import aplicar_migraciones
 from app.routers import config, dashboard, gastos, ingresos
 
-Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="$Aldo API")
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    aplicar_migraciones()
+    yield
+
+
+app = FastAPI(title="$Aldo API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

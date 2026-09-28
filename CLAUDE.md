@@ -18,13 +18,17 @@ Como apoyo secundario: una configuración en wizard (ingresos, día de cobro, ga
 ## 🛠️ Stack Tecnológico
 *   **Frontend:** React 19 + Vite + Tailwind CSS 4, mobile-first (`frontend/`).
 *   **Backend:** FastAPI + SQLAlchemy + Pydantic v2 (`backend/`).
-*   **Base de Datos:** SQLite (`backend/aldo.db`), a migrar a PostgreSQL más adelante.
+*   **Base de Datos:** SQLite (`backend/aldo.db`, configurable con `ALDO_DATABASE_URL`), con migraciones Alembic (`backend/migrations/`). A migrar a PostgreSQL más adelante.
 
 ### Cómo levantarlo
 ```bash
 # Backend (desde backend/)
 venv\Scripts\activate
+pip install -r requirements-dev.txt
 uvicorn main:app --reload          # http://localhost:8000  ·  Swagger en /docs
+                                   # al arrancar aplica las migraciones pendientes
+pytest                             # tests (usan una base temporal, nunca aldo.db)
+alembic revision -m "descripcion"  # nueva migración (escribirla a mano en migrations/versions/)
 
 # Frontend (desde frontend/)
 npm run dev                        # http://localhost:5173 (proxy /api -> :8000)
@@ -79,5 +83,5 @@ Hay dos subagentes definidos en `.claude/agents/`, cada uno con sus reglas espec
 ## 🗺️ Pendientes conocidos
 *   Zona horaria: hoy se usa `date.today()` del servidor. Falta respetar la zona del usuario.
 *   La plata se guarda como `Float`. Conviene migrar a centavos (`Integer`) o `Numeric`.
-*   No hay migraciones (Alembic) ni tests automatizados.
+*   No hay tests de frontend.
 *   Cambiar `dia_cobro` puede mover el ciclo y dejar ingresos extra en la configuración anterior.

@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException
+from datetime import date
+
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from .. import models, schemas
-from ..deps import get_db, get_usuario_actual
-from ..logic import calcular_dashboard
+from ..deps import dashboard_o_404, get_db, get_hoy, get_usuario_actual
 
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 
@@ -12,8 +13,6 @@ router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 def obtener_dashboard(
     db: Session = Depends(get_db),
     usuario: models.Usuario = Depends(get_usuario_actual),
+    hoy: date = Depends(get_hoy),
 ):
-    resultado = calcular_dashboard(db, usuario)
-    if resultado is None:
-        raise HTTPException(status_code=404, detail="Todavía no configuraste tu mes")
-    return resultado
+    return dashboard_o_404(db, usuario, hoy)

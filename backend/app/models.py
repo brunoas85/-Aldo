@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Date, Float, ForeignKey, Integer, String
+from sqlalchemy import Column, Date, Float, ForeignKey, Index, Integer, String
 from sqlalchemy.orm import relationship
 
 from .database import Base
@@ -17,6 +17,8 @@ class Usuario(Base):
 
 class ConfiguracionMensual(Base):
     __tablename__ = "configuraciones_mensuales"
+    # Una sola config por ciclo: (anio, mes) es el mes en que arranca el ciclo.
+    __table_args__ = (Index("uq_config_usuario_ciclo", "usuario_id", "anio", "mes", unique=True),)
 
     id = Column(Integer, primary_key=True, index=True)
     usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
