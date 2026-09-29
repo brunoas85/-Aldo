@@ -17,12 +17,22 @@ def run_migrations_offline():
         context.run_migrations()
 
 
+def _migrar(connection):
+    # render_as_batch: SQLite no soporta ALTER TABLE completo, Alembic recrea la tabla.
+    context.configure(connection=connection, target_metadata=target_metadata, render_as_batch=True)
+    with context.begin_transaction():
+        context.run_migrations()
+
+
 def run_migrations_online():
+    # Quien llama puede pasar su propia conexión (ej. scripts/migrar_a_neon.py migra
+    # otra base dentro de su transacción); si no, se usa la base de la app.
+    connection = context.config.attributes.get("connection")
+    if connection is not None:
+        _migrar(connection)
+        return
     with engine.connect() as connection:
-        # render_as_batch: SQLite no soporta ALTER TABLE completo, Alembic recrea la tabla.
-        context.configure(connection=connection, target_metadata=target_metadata, render_as_batch=True)
-        with context.begin_transaction():
-            context.run_migrations()
+        _migrar(connection)
 
 
 if context.is_offline_mode():

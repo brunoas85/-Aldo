@@ -11,7 +11,7 @@ export default function SugerenciasList({ sugerencias }) {
       {sugerencias.map((texto, i) => (
         <div
           key={i}
-          className="flex items-start gap-2 rounded-2xl bg-violet-50 p-3 text-sm text-violet-900 ring-1 ring-violet-100"
+          className="flex items-start gap-2 rounded-2xl bg-violet-50 p-3 text-sm text-violet-900 ring-1 ring-violet-100 dark:bg-violet-950/50 dark:text-violet-100 dark:ring-violet-900"
         >
           <Lightbulb size={16} className="mt-0.5 shrink-0 text-violet-500" />
           <span>{texto}</span>

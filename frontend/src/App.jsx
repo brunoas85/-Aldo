@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { AlertCircle, Clock3, Settings, X } from 'lucide-react'
+import { AlertCircle, Clock3, Moon, Settings, Sun, X } from 'lucide-react'
 import Dashboard from './components/Dashboard'
 import ExpenseInput from './components/ExpenseInput'
 import ConfigWizard from './components/ConfigWizard'
@@ -9,6 +9,9 @@ import SugerenciasList from './components/SugerenciasList'
 import GastosFijosList from './components/GastosFijosList'
 import GastoPorDiaChart from './components/GastoPorDiaChart'
 import GastosFijosChart from './components/GastosFijosChart'
+import CotizacionesCard from './components/CotizacionesCard'
+import ClaveModal from './components/ClaveModal'
+import useTema from './useTema'
 import {
   getDashboard,
   saveConfig,
@@ -18,6 +21,7 @@ import {
   registrarIngreso,
   editarIngreso,
   borrarIngreso,
+  guardarClave,
 } from './api/client'
 
 function sumarDias(iso, n) {
@@ -40,6 +44,23 @@ function App() {
   const [showConfig, setShowConfig] = useState(false)
   const [showIngreso, setShowIngreso] = useState(false)
   const [showHistorial, setShowHistorial] = useState(false)
+  const { tema, alternarTema } = useTema()
+  // null: no hace falta clave · 'nueva': la pedimos · 'incorrecta': la que puso no anduvo
+  const [pedirClave, setPedirClave] = useState(null)
+  const [despertando, setDespertando] = useState(false)
+
+  // Render (plan gratis) duerme el backend: el primer request puede tardar hasta un minuto.
+  useEffect(() => {
+    if (!cargando) return setDespertando(false)
+    const t = setTimeout(() => setDespertando(true), 4000)
+    return () => clearTimeout(t)
+  }, [cargando])
+
+  const manejarSinClave = (err) => {
+    if (err.response?.status !== 401) return false
+    setPedirClave((actual) => (actual === null && !err.config?.headers?.['X-Aldo-Clave'] ? 'nueva' : 'incorrecta'))
+    return true
+  }
 
   const cargarDashboard = () => {
     setCargando(true)
@@ -50,7 +71,7 @@ function App() {
         // Solo un 404 significa "todavía no configuraste nada"; cualquier otro error
         // (backend caído, 500) no tiene que mandarte a cargar todo de nuevo.
         if (err.response?.status === 404) setShowConfig(true)
-        else setError(mensajeDeError(err))
+        else if (!manejarSinClave(err)) setError(mensajeDeError(err))
       })
       .finally(() => setCargando(false))
   }
@@ -65,9 +86,15 @@ function App() {
       setError(null)
       return true
     } catch (err) {
-      setError(mensajeDeError(err))
+      if (!manejarSinClave(err)) setError(mensajeDeError(err))
       return false
     }
+  }
+
+  const handleSaveClave = (clave) => {
+    guardarClave(clave)
+    setPedirClave(null)
+    cargarDashboard()
   }
 
   const handleSaveConfig = async (config) => {
@@ -107,7 +134,7 @@ function App() {
       {error && (
         <div
           role="alert"
-          className="fixed inset-x-4 top-4 z-[60] mx-auto flex max-w-sm items-start gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 shadow-md ring-1 ring-red-100"
+          className="fixed inset-x-4 top-4 z-[60] mx-auto flex max-w-sm items-start gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 shadow-md ring-1 ring-red-100 dark:bg-red-950 dark:text-red-200 dark:ring-red-900"
         >
           <AlertCircle size={18} className="mt-0.5 shrink-0" />
           <p className="flex-1">{error}</p>
@@ -123,7 +150,12 @@ function App() {
         </div>
       )}
 
-      {cargando && !dashboard && <p className="mt-20 text-sm text-gray-400">Cargando...</p>}
+      {cargando && !dashboard && (
+        <div className="mt-20 text-center text-sm text-gray-400">
+          <p>Cargando...</p>
+          {despertando && <p className="mt-1">Aldo se está despertando, puede tardar hasta un minuto.</p>}
+        </div>
+      )}
 
       {dashboard && (
         <>
@@ -137,6 +169,16 @@ function App() {
             saldoCiclo={dashboard.saldo_disponible_ciclo}
             ingresoTotal={ingresoTotal}
             ingresoNeto={poolInicial}
+            accion={
+              <button
+                type="button"
+                onClick={alternarTema}
+                aria-label={tema === 'oscuro' ? 'Pasar a modo claro' : 'Pasar a modo oscuro'}
+                className="rounded-full p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+              >
+                {tema === 'oscuro' ? <Sun size={18} /> : <Moon size={18} />}
+              </button>
+            }
           />
           <SugerenciasList sugerencias={dashboard.sugerencias} />
           <GastosFijosList gastosFijos={dashboard.gastos_fijos} ingresosMensuales={dashboard.ingresos_mensuales} />
@@ -148,6 +190,7 @@ function App() {
             gastosCiclo={dashboard.gastos_ciclo}
           />
           <GastosFijosChart gastosFijos={dashboard.gastos_fijos} />
+          <CotizacionesCard presupuestoDiario={dashboard.presupuesto_diario} />
 
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
             <button
@@ -178,6 +221,7 @@ function App() {
         onClose={dashboard ? () => setShowConfig(false) : undefined}
         initialData={dashboard}
       />
+      <ClaveModal open={pedirClave !== null} incorrecta={pedirClave === 'incorrecta'} onSave={handleSaveClave} />
       <IngresoModal open={showIngreso} onSave={handleAddIngreso} onClose={() => setShowIngreso(false)} />
       {dashboard && (
         <HistorialModal

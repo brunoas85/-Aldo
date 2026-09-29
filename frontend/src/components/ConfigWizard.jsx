@@ -75,7 +75,7 @@ export default function ConfigWizard({ open, onSave, onClose, initialData }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4 sm:items-center">
-      <div className="flex w-full max-w-sm flex-col rounded-3xl bg-white p-6 shadow-xl">
+      <div className="flex w-full max-w-sm flex-col rounded-3xl bg-aldo-card p-6 shadow-xl">
         <div className="mb-4 flex items-center gap-3">
           {paso > 0 && (
             <button type="button" onClick={atras} className="rounded-full p-1 text-gray-400 hover:bg-gray-100">

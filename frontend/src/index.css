@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* El modo oscuro se activa con la clase .dark en <html> (ver useTema). */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-aldo-bien: #10b981;
   --color-aldo-bien-soft: #d1fae5;
@@ -9,6 +12,31 @@
   --color-aldo-critico-soft: #fee2e2;
   --color-aldo-ink: #171321;
   --color-aldo-surface: #faf9fc;
+  --color-aldo-card: #ffffff;
+  --color-aldo-grid: #e1e0d9;
+}
+
+/*
+ * En oscuro se invierte la escala de grises: los componentes siguen usando
+ * text-gray-900, ring-gray-100, etc. y quedan bien en los dos temas sin
+ * duplicar clases. Solo los colores con tinte (violeta, rojo) llevan dark:.
+ */
+.dark {
+  color-scheme: dark;
+  --color-aldo-surface: #110f17;
+  --color-aldo-card: #1a1722;
+  --color-aldo-grid: #2f2b3a;
+  --color-gray-50: #1f1c28;
+  --color-gray-100: #2a2634;
+  --color-gray-200: #353040;
+  --color-gray-300: #3f3a4b;
+  --color-gray-400: #8a8597;
+  --color-gray-500: #a19cae;
+  --color-gray-600: #bdb8c9;
+  --color-gray-700: #d6d2e0;
+  --color-gray-800: #e6e3ee;
+  --color-gray-900: #f3f1f8;
+  --color-gray-950: #faf9fc;
 }
 
 body {

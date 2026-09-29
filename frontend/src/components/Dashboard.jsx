@@ -25,6 +25,7 @@ export default function Dashboard({
   saldoCiclo,
   ingresoTotal,
   ingresoNeto,
+  accion,
 }) {
   return (
     <div className="flex w-full max-w-sm flex-col items-center gap-4">
@@ -34,6 +35,7 @@ export default function Dashboard({
           <p className="text-sm text-gray-400">¿Qué onda, {nombre}?</p>
           <p className="text-sm font-medium text-gray-600">Hoy tenés para gastar</p>
         </div>
+        {accion && <div className="ml-auto">{accion}</div>}
       </div>
 
       <div

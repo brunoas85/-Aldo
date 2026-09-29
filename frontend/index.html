@@ -5,6 +5,14 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>$Aldo</title>
+    <script>
+      // Aplica el tema antes de pintar (misma lógica que src/useTema.js)
+      try {
+        const t = localStorage.getItem('aldo-tema')
+        const oscuro = t ? t === 'oscuro' : matchMedia('(prefers-color-scheme: dark)').matches
+        if (oscuro) document.documentElement.classList.add('dark')
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

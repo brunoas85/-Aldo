@@ -35,7 +35,7 @@ export default function GastoFijoRow({ gasto, onChange, onRemove }) {
       <button
         type="button"
         onClick={onRemove}
-        className="shrink-0 rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-500"
+        className="shrink-0 rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950/50"
         aria-label="Quitar gasto"
       >
         <Trash2 size={16} />

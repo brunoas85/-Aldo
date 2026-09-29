@@ -18,7 +18,7 @@ export default function ExpenseInput({ onAdd, onOpenIngreso }) {
   }
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-100 bg-white/95 p-4 backdrop-blur">
+    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-100 bg-aldo-card/95 p-4 backdrop-blur">
       <form onSubmit={handleSubmit} className="mx-auto flex w-full max-w-sm gap-2">
         <input
           type="number"
@@ -32,7 +32,7 @@ export default function ExpenseInput({ onAdd, onOpenIngreso }) {
         <button
           type="submit"
           disabled={enviando}
-          className="rounded-xl bg-gray-900 px-6 py-4 text-lg font-semibold text-white active:bg-gray-700 disabled:opacity-50"
+          className="rounded-xl bg-gray-900 px-6 py-4 text-lg font-semibold text-white active:bg-gray-700 disabled:opacity-50 dark:bg-emerald-600 dark:active:bg-emerald-700"
         >
           Restar
         </button>

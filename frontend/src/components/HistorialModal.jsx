@@ -41,7 +41,7 @@ function MovimientoRow({ movimiento, onEdit, onDelete }) {
           type="button"
           onClick={guardar}
           aria-label="Guardar"
-          className="rounded-lg p-1.5 text-emerald-600 hover:bg-emerald-50"
+          className="rounded-lg p-1.5 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/50"
         >
           <Check size={16} />
         </button>
@@ -72,7 +72,7 @@ function MovimientoRow({ movimiento, onEdit, onDelete }) {
           type="button"
           onClick={() => onDelete(movimiento.id)}
           aria-label="Borrar"
-          className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500"
+          className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950/50"
         >
           <Trash2 size={14} />
         </button>
@@ -100,7 +100,7 @@ export default function HistorialModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4 sm:items-center">
-      <div className="flex max-h-[80vh] w-full max-w-sm flex-col rounded-3xl bg-white p-6 shadow-xl">
+      <div className="flex max-h-[80vh] w-full max-w-sm flex-col rounded-3xl bg-aldo-card p-6 shadow-xl">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-900">Tus movimientos</h2>
           <button type="button" onClick={onClose} className="rounded-full p-1 text-gray-400 hover:bg-gray-100">

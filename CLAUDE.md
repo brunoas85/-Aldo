@@ -16,9 +16,9 @@ Como apoyo secundario: una configuración en wizard (ingresos, día de cobro, ga
 ---
 
 ## 🛠️ Stack Tecnológico
-*   **Frontend:** React 19 + Vite + Tailwind CSS 4, mobile-first (`frontend/`).
+*   **Frontend:** React 19 + Vite + Tailwind CSS 4, mobile-first (`frontend/`). Modo oscuro con la clase `.dark` en `<html>` (`useTema.js`): en `index.css` se invierte la escala de grises y `bg-aldo-card` reemplaza a `bg-white`, así que en los componentes nuevos usá grises y `bg-aldo-card`, y agregá `dark:` solo para los colores con tinte.
 *   **Backend:** FastAPI + SQLAlchemy + Pydantic v2 (`backend/`).
-*   **Base de Datos:** SQLite (`backend/aldo.db`, configurable con `ALDO_DATABASE_URL`), con migraciones Alembic (`backend/migrations/`). A migrar a PostgreSQL más adelante.
+*   **Base de Datos:** SQLite en local (`backend/aldo.db`) y PostgreSQL (Neon) en producción, elegida con `ALDO_DATABASE_URL`. Migraciones Alembic (`backend/migrations/`) que tienen que funcionar en los dos motores.
 
 ### Cómo levantarlo
 ```bash
@@ -34,6 +34,12 @@ alembic revision -m "descripcion"  # nueva migración (escribirla a mano en migr
 npm run dev                        # http://localhost:5173 (proxy /api -> :8000)
 npm run lint && npm run build      # verificación
 ```
+
+### Producción (Render + Neon + Vercel)
+*   **Backend en Render** con `render.yaml` (Blueprint). Variables: `ALDO_DATABASE_URL` (connection string de Neon, `postgresql://...`), `ALDO_API_KEY` (la genera Render) y `ALDO_CORS_ORIGINS` (URL del frontend, separadas por coma si hay varias).
+*   **Frontend en Vercel** con Root Directory `frontend/` y `VITE_API_URL` = URL del backend en Render (sin `/api` al final).
+*   **Pasar los datos locales a Neon:** `python -m scripts.migrar_a_neon` (desde `backend/`). Pide la URL sin mostrarla, crea las tablas, copia todo en una transacción y no hace nada si el destino ya tiene datos.
+*   Si `ALDO_API_KEY` no está definida, la API queda abierta. Eso solo tiene sentido en desarrollo local.
 
 ---
 
@@ -53,6 +59,8 @@ $$Presupuesto\ de\ hoy = \frac{Pool + Gastado\ hoy}{Días\ restantes\ (incluye\ 
 ## 🔌 Contrato de API
 Todas las mutaciones devuelven el **`DashboardOut` completo**, así el frontend reemplaza su estado sin recalcular nada. Si el usuario nunca configuró nada, las rutas responden `404`. Si los datos no son válidos, responden `422`.
 
+**Clave:** si el server tiene `ALDO_API_KEY`, todas las rutas salvo `/api/health` exigen el header `X-Aldo-Clave` con ese valor, y sin él responden `401`. El frontend pide la clave la primera vez y la guarda en `localStorage`.
+
 | Método | Ruta | Body | Notas |
 |---|---|---|---|
 | `GET` | `/api/dashboard` | — | 404 si nunca se configuró |
@@ -61,7 +69,9 @@ Todas las mutaciones devuelven el **`DashboardOut` completo**, así el frontend 
 | `PUT` / `DELETE` | `/api/gastos/{id}` | `{monto>0, descripcion?}` | |
 | `POST` | `/api/ingresos` | `{monto>0, descripcion?}` | Ingreso extra del ciclo |
 | `PUT` / `DELETE` | `/api/ingresos/{id}` | `{monto>0, descripcion?}` | |
-| `GET` | `/api/health` | — | |
+| `GET` | `/api/health` | — | No pide clave |
+
+**API externa:** las cotizaciones (dólar oficial/blue/MEP/tarjeta y peso chileno) se piden directo desde el navegador a `dolarapi.com` (`frontend/src/api/cotizaciones.js`), con caché de 30 min en `localStorage`. No pasan por el backend.
 
 `DashboardOut` incluye: `nombre`, `presupuesto_diario`, `estado`, `dias_restantes`, `dias_totales_ciclo`, `inicio_ciclo`, `fin_ciclo`, `gastado_hoy`, `dia_cobro`, `ingresos_mensuales`, `meta_ahorro`, `gastos_fijos[]`, `ingresos_variables_ciclo`, `ingresos_variables[]`, `gastos_ciclo[]`, `saldo_disponible_ciclo`, `sugerencias[]`. La definición exacta está en `backend/app/schemas.py`.
 

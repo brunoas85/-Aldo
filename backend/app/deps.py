@@ -1,13 +1,26 @@
+import os
+import secrets
 from datetime import date
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends, Header, HTTPException
 from sqlalchemy.orm import Session
 
 from . import models
 from .database import get_db
 from .logic import calcular_dashboard
 
-__all__ = ["get_db", "get_usuario_actual", "get_hoy", "dashboard_o_404"]
+__all__ = ["get_db", "get_usuario_actual", "get_hoy", "dashboard_o_404", "verificar_clave"]
+
+
+def verificar_clave(x_aldo_clave: str | None = Header(default=None)) -> None:
+    """Protección mínima mientras no haya login: si el server tiene ALDO_API_KEY,
+    cada request tiene que mandar esa misma clave en el header X-Aldo-Clave.
+    Se lee en cada request para que los tests puedan activarla con monkeypatch."""
+    clave = os.environ.get("ALDO_API_KEY")
+    if not clave:
+        return
+    if x_aldo_clave is None or not secrets.compare_digest(x_aldo_clave, clave):
+        raise HTTPException(status_code=401, detail="Clave incorrecta")
 
 
 def get_usuario_actual(db: Session = Depends(get_db)) -> models.Usuario:
