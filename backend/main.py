@@ -1,12 +1,11 @@
 import os
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.deps import verificar_clave
 from app.migraciones import aplicar_migraciones
-from app.routers import config, dashboard, gastos, ingresos
+from app.routers import auth, config, dashboard, gastos, ingresos
 
 
 @asynccontextmanager
@@ -28,9 +27,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# /api/health queda afuera a propósito: Render lo usa para saber si el server está vivo.
-for router in (config.router, dashboard.router, gastos.router, ingresos.router):
-    app.include_router(router, dependencies=[Depends(verificar_clave)])
+# Las rutas de datos piden sesión a través de get_usuario_actual; /api/auth y /api/health no.
+for router in (auth.router, config.router, dashboard.router, gastos.router, ingresos.router):
+    app.include_router(router)
 
 
 @app.get("/api/health")

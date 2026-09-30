@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { AlertCircle, Clock3, Moon, Settings, Sun, X } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
+import { AlertCircle, Clock3, LogOut, Moon, Settings, Sun, X } from 'lucide-react'
 import Dashboard from './components/Dashboard'
 import ExpenseInput from './components/ExpenseInput'
 import ConfigWizard from './components/ConfigWizard'
@@ -10,7 +10,7 @@ import GastosFijosList from './components/GastosFijosList'
 import GastoPorDiaChart from './components/GastoPorDiaChart'
 import GastosFijosChart from './components/GastosFijosChart'
 import CotizacionesCard from './components/CotizacionesCard'
-import ClaveModal from './components/ClaveModal'
+import LoginScreen from './components/LoginScreen'
 import useTema from './useTema'
 import {
   getDashboard,
@@ -21,7 +21,9 @@ import {
   registrarIngreso,
   editarIngreso,
   borrarIngreso,
-  guardarClave,
+  haySesion,
+  loginConGoogle,
+  cerrarSesion,
 } from './api/client'
 
 function sumarDias(iso, n) {
@@ -45,20 +47,33 @@ function App() {
   const [showIngreso, setShowIngreso] = useState(false)
   const [showHistorial, setShowHistorial] = useState(false)
   const { tema, alternarTema } = useTema()
-  // null: no hace falta clave · 'nueva': la pedimos · 'incorrecta': la que puso no anduvo
-  const [pedirClave, setPedirClave] = useState(null)
+  const [conSesion, setConSesion] = useState(haySesion)
+  const [entrando, setEntrando] = useState(false)
+  const [errorLogin, setErrorLogin] = useState(null)
   const [despertando, setDespertando] = useState(false)
 
   // Render (plan gratis) duerme el backend: el primer request puede tardar hasta un minuto.
   useEffect(() => {
-    if (!cargando) return setDespertando(false)
+    if (!cargando || !conSesion) return setDespertando(false)
     const t = setTimeout(() => setDespertando(true), 4000)
     return () => clearTimeout(t)
-  }, [cargando])
+  }, [cargando, conSesion])
 
-  const manejarSinClave = (err) => {
+  const salir = () => {
+    cerrarSesion()
+    window.google?.accounts.id.disableAutoSelect()
+    setConSesion(false)
+    setDashboard(null)
+    setShowConfig(false)
+    setShowIngreso(false)
+    setShowHistorial(false)
+    setError(null)
+  }
+
+  // 401: la sesión venció o no es válida. Se vuelve al login.
+  const manejarSinSesion = (err) => {
     if (err.response?.status !== 401) return false
-    setPedirClave((actual) => (actual === null && !err.config?.headers?.['X-Mango-Clave'] ? 'nueva' : 'incorrecta'))
+    salir()
     return true
   }
 
@@ -71,12 +86,28 @@ function App() {
         // Solo un 404 significa "todavía no configuraste nada"; cualquier otro error
         // (backend caído, 500) no tiene que mandarte a cargar todo de nuevo.
         if (err.response?.status === 404) setShowConfig(true)
-        else if (!manejarSinClave(err)) setError(mensajeDeError(err))
+        else if (!manejarSinSesion(err)) setError(mensajeDeError(err))
       })
       .finally(() => setCargando(false))
   }
 
-  useEffect(cargarDashboard, [])
+  useEffect(() => {
+    if (conSesion) cargarDashboard()
+    else setCargando(false)
+  }, [conSesion])
+
+  const handleCredential = useCallback(async (credential) => {
+    setEntrando(true)
+    setErrorLogin(null)
+    try {
+      await loginConGoogle(credential)
+      setConSesion(true)
+    } catch (err) {
+      setErrorLogin(mensajeDeError(err))
+    } finally {
+      setEntrando(false)
+    }
+  }, [])
 
   // Ejecuta una llamada que devuelve el dashboard. Devuelve true si salió bien, así
   // los componentes solo limpian sus inputs cuando el dato quedó guardado.
@@ -86,15 +117,9 @@ function App() {
       setError(null)
       return true
     } catch (err) {
-      if (!manejarSinClave(err)) setError(mensajeDeError(err))
+      if (!manejarSinSesion(err)) setError(mensajeDeError(err))
       return false
     }
-  }
-
-  const handleSaveClave = (clave) => {
-    guardarClave(clave)
-    setPedirClave(null)
-    cargarDashboard()
   }
 
   const handleSaveConfig = async (config) => {
@@ -150,7 +175,11 @@ function App() {
         </div>
       )}
 
-      {cargando && !dashboard && (
+      {!conSesion && (
+        <LoginScreen tema={tema} entrando={entrando} error={errorLogin} onCredential={handleCredential} />
+      )}
+
+      {conSesion && cargando && !dashboard && (
         <div className="mt-20 text-center text-sm text-gray-400">
           <p>Cargando...</p>
           {despertando && <p className="mt-1">Mango se está despertando, puede tardar hasta un minuto.</p>}
@@ -209,6 +238,14 @@ function App() {
               <Settings size={15} />
               Editar ingresos y gastos fijos
             </button>
+            <button
+              type="button"
+              onClick={salir}
+              className="flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-700"
+            >
+              <LogOut size={15} />
+              Cerrar sesión
+            </button>
           </div>
 
           <ExpenseInput onAdd={handleAddGasto} onOpenIngreso={() => setShowIngreso(true)} />
@@ -221,7 +258,6 @@ function App() {
         onClose={dashboard ? () => setShowConfig(false) : undefined}
         initialData={dashboard}
       />
-      <ClaveModal open={pedirClave !== null} incorrecta={pedirClave === 'incorrecta'} onSave={handleSaveClave} />
       <IngresoModal open={showIngreso} onSave={handleAddIngreso} onClose={() => setShowIngreso(false)} />
       {dashboard && (
         <HistorialModal

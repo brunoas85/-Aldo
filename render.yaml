@@ -17,5 +17,9 @@ services:
         sync: false # connection string de Neon: postgresql://...?sslmode=require
       - key: MANGO_CORS_ORIGINS
         sync: false # URL del frontend en Vercel, ej. https://mango.vercel.app
-      - key: MANGO_API_KEY
-        generateValue: true # la clave que vas a cargar en la app; la ves en Environment
+      - key: MANGO_GOOGLE_CLIENT_ID
+        sync: false # ID de cliente OAuth de Google Cloud: ....apps.googleusercontent.com
+      - key: MANGO_EMAIL_USUARIO_INICIAL
+        sync: false # email de Google que se queda con los datos de antes del login
+      - key: MANGO_SECRET
+        generateValue: true # firma las sesiones; si cambia, todos tienen que volver a entrar

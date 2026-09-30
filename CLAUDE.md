@@ -36,10 +36,10 @@ npm run lint && npm run build      # verificación
 ```
 
 ### Producción (Render + Neon + Vercel)
-*   **Backend en Render** con `render.yaml` (Blueprint). Variables: `MANGO_DATABASE_URL` (connection string de Neon, `postgresql://...`), `MANGO_API_KEY` (la genera Render) y `MANGO_CORS_ORIGINS` (URL del frontend, separadas por coma si hay varias).
-*   **Frontend en Vercel** con Root Directory `frontend/` y `VITE_API_URL` = URL del backend en Render (sin `/api` al final).
+*   **Backend en Render** con `render.yaml` (Blueprint). Variables: `MANGO_DATABASE_URL` (connection string de Neon, `postgresql://...`), `MANGO_CORS_ORIGINS` (URL del frontend, separadas por coma si hay varias), `MANGO_GOOGLE_CLIENT_ID` (ID de cliente OAuth de Google Cloud), `MANGO_SECRET` (firma las sesiones, la genera Render) y `MANGO_EMAIL_USUARIO_INICIAL` (email de Google que se queda con los datos del usuario id=1, de antes del login).
+*   **Frontend en Vercel** con Root Directory `frontend/` y `VITE_API_URL` = URL del backend en Render (sin `/api` al final) y `VITE_GOOGLE_CLIENT_ID` = el mismo ID de cliente que el backend.
 *   **Pasar los datos locales a Neon:** `python -m scripts.migrar_a_neon` (desde `backend/`). Pide la URL sin mostrarla, crea las tablas, copia todo en una transacción y no hace nada si el destino ya tiene datos.
-*   Si `MANGO_API_KEY` no está definida, la API queda abierta. Eso solo tiene sentido en desarrollo local.
+*   **Google Cloud:** el ID de cliente OAuth (tipo "Aplicación web") tiene que tener como orígenes autorizados la URL de Vercel y `http://localhost:5173`. En local, definí `MANGO_GOOGLE_CLIENT_ID` antes de `uvicorn` y creá `frontend/.env.local` con `VITE_GOOGLE_CLIENT_ID`. Sin `MANGO_SECRET`, las sesiones duran hasta que se reinicia el server.
 
 ---
 
@@ -59,17 +59,18 @@ $$Presupuesto\ de\ hoy = \frac{Pool + Gastado\ hoy}{Días\ restantes\ (incluye\ 
 ## 🔌 Contrato de API
 Todas las mutaciones devuelven el **`DashboardOut` completo**, así el frontend reemplaza su estado sin recalcular nada. Si el usuario nunca configuró nada, las rutas responden `404`. Si los datos no son válidos, responden `422`.
 
-**Clave:** si el server tiene `MANGO_API_KEY`, todas las rutas salvo `/api/health` exigen el header `X-Mango-Clave` con ese valor, y sin él responden `401`. El frontend pide la clave la primera vez y la guarda en `localStorage`.
+**Sesión:** cada usuario entra con Google. El frontend manda el ID token de Google a `/api/auth/google` y recibe un token de sesión propio (JWT, 60 días) que guarda en `localStorage` y manda como `Authorization: Bearer <token>`. Todas las rutas salvo `/api/auth/google` y `/api/health` lo exigen, y sin él (o vencido) responden `401`. Cada usuario ve y toca solo sus datos: un id ajeno da `404`.
 
 | Método | Ruta | Body | Notas |
 |---|---|---|---|
+| `POST` | `/api/auth/google` | `{credential}` (ID token de Google) | Devuelve `{token, nombre, email}`. Crea el usuario si es nuevo. 401 si el token de Google no es válido |
 | `GET` | `/api/dashboard` | — | 404 si nunca se configuró |
 | `POST` | `/api/config` | `{ingresos_mensuales>0, dia_cobro 1-31, meta_ahorro>=0, gastos_fijos:[{nombre, monto>0, categoria?}]}` | Crea o actualiza la config del ciclo actual |
 | `POST` | `/api/gastos` | `{monto>0, descripcion?}` | Fecha = hoy |
 | `PUT` / `DELETE` | `/api/gastos/{id}` | `{monto>0, descripcion?}` | |
 | `POST` | `/api/ingresos` | `{monto>0, descripcion?}` | Ingreso extra del ciclo |
 | `PUT` / `DELETE` | `/api/ingresos/{id}` | `{monto>0, descripcion?}` | |
-| `GET` | `/api/health` | — | No pide clave |
+| `GET` | `/api/health` | — | No pide sesión |
 
 **API externa:** las cotizaciones (dólar oficial/blue/MEP/tarjeta y peso chileno) se piden directo desde el navegador a `dolarapi.com` (`frontend/src/api/cotizaciones.js`), con caché de 30 min en `localStorage`. No pasan por el backend.
 

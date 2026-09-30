@@ -5,7 +5,7 @@ from app.database import engine
 from app.migraciones import aplicar_migraciones
 
 
-def test_base_vieja_sin_alembic_se_migra_sin_perder_datos(client, alembic_cfg):
+def test_base_vieja_sin_alembic_se_migra_sin_perder_datos(client_anonimo, alembic_cfg):
     """Simula una mango.db creada con create_all antes de Alembic: tiene el esquema
     de 0001 con datos, pero no tiene la tabla alembic_version."""
     command.downgrade(alembic_cfg, "base")
@@ -23,14 +23,14 @@ def test_base_vieja_sin_alembic_se_migra_sin_perder_datos(client, alembic_cfg):
     aplicar_migraciones()
 
     with engine.connect() as conn:
-        assert conn.execute(text("SELECT version_num FROM alembic_version")).scalar() == "0002"
+        assert conn.execute(text("SELECT version_num FROM alembic_version")).scalar() == "0003"
         assert conn.execute(text("SELECT count(*) FROM configuraciones_mensuales")).scalar() == 1
     indices = {i["name"] for i in inspect(engine).get_indexes("configuraciones_mensuales")}
     assert "uq_config_usuario_ciclo" in indices
 
 
-def test_aplicar_migraciones_es_idempotente(client):
+def test_aplicar_migraciones_es_idempotente(client_anonimo):
     aplicar_migraciones()
     aplicar_migraciones()
     with engine.connect() as conn:
-        assert conn.execute(text("SELECT version_num FROM alembic_version")).scalar() == "0002"
+        assert conn.execute(text("SELECT version_num FROM alembic_version")).scalar() == "0003"

@@ -6,26 +6,44 @@ const api = axios.create({
   baseURL: `${import.meta.env.VITE_API_URL ?? ''}/api`,
 })
 
-// Clave de la API (MANGO_API_KEY del server). Se pide una vez y queda en este dispositivo.
-const CLAVE_STORAGE = 'mango-clave'
+// Token de sesión que devuelve /api/auth/google. Queda en este dispositivo hasta que
+// cerrás sesión o vence (60 días); ahí el server responde 401 y se vuelve al login.
+const SESION_STORAGE = 'mango-sesion'
 
-export function guardarClave(clave) {
+function leerToken() {
   try {
-    localStorage.setItem(CLAVE_STORAGE, clave)
+    return localStorage.getItem(SESION_STORAGE)
   } catch {
-    // sin localStorage: habrá que cargarla de nuevo la próxima vez
+    return null
+  }
+}
+
+export const haySesion = () => Boolean(leerToken())
+
+export function cerrarSesion() {
+  try {
+    localStorage.removeItem(SESION_STORAGE)
+  } catch {
+    // sin localStorage no había nada guardado
   }
 }
 
 api.interceptors.request.use((config) => {
-  try {
-    const clave = localStorage.getItem(CLAVE_STORAGE)
-    if (clave) config.headers['X-Mango-Clave'] = clave
-  } catch {
-    // sin localStorage el server responde 401 y se pide la clave
-  }
+  const token = leerToken()
+  if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
+
+export async function loginConGoogle(credential) {
+  const { data } = await api.post('/auth/google', { credential })
+  try {
+    localStorage.setItem(SESION_STORAGE, data.token)
+  } catch {
+    // sin localStorage la sesión dura hasta que se recargue la página
+    api.defaults.headers.common.Authorization = `Bearer ${data.token}`
+  }
+  return data
+}
 
 export const getDashboard = () => api.get('/dashboard').then((res) => res.data)
 

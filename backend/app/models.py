@@ -6,10 +6,14 @@ from .database import Base
 
 class Usuario(Base):
     __tablename__ = "usuarios"
+    __table_args__ = (Index("uq_usuarios_google_sub", "google_sub", unique=True),)
 
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String, default="vos")
     dia_cobro = Column(Integer, nullable=False, default=1)
+    # Identificador estable de la cuenta de Google ("sub" del token). El email puede cambiar.
+    google_sub = Column(String, nullable=True)
+    email = Column(String, nullable=True)
 
     configuraciones = relationship("ConfiguracionMensual", back_populates="usuario")
     transacciones = relationship("TransaccionDiaria", back_populates="usuario")

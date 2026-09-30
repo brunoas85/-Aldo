@@ -1,36 +1,25 @@
-import os
-import secrets
 from datetime import date
 
 from fastapi import Depends, Header, HTTPException
 from sqlalchemy.orm import Session
 
 from . import models
+from .auth import leer_sesion
 from .database import get_db
 from .logic import calcular_dashboard
 
-__all__ = ["get_db", "get_usuario_actual", "get_hoy", "dashboard_o_404", "verificar_clave"]
+__all__ = ["get_db", "get_usuario_actual", "get_hoy", "dashboard_o_404"]
 
 
-def verificar_clave(x_mango_clave: str | None = Header(default=None)) -> None:
-    """Protección mínima mientras no haya login: si el server tiene MANGO_API_KEY,
-    cada request tiene que mandar esa misma clave en el header X-Mango-Clave.
-    Se lee en cada request para que los tests puedan activarla con monkeypatch."""
-    clave = os.environ.get("MANGO_API_KEY")
-    if not clave:
-        return
-    if x_mango_clave is None or not secrets.compare_digest(x_mango_clave, clave):
-        raise HTTPException(status_code=401, detail="Clave incorrecta")
-
-
-def get_usuario_actual(db: Session = Depends(get_db)) -> models.Usuario:
-    """MVP de un solo usuario: siempre devuelve (o crea) el usuario id=1."""
-    usuario = db.query(models.Usuario).filter_by(id=1).first()
+def get_usuario_actual(
+    authorization: str | None = Header(default=None), db: Session = Depends(get_db)
+) -> models.Usuario:
+    """Usuario de la sesión (header "Authorization: Bearer <token>"), o 401."""
+    esquema, _, token = (authorization or "").partition(" ")
+    usuario_id = leer_sesion(token) if esquema.lower() == "bearer" and token else None
+    usuario = db.get(models.Usuario, usuario_id) if usuario_id is not None else None
     if usuario is None:
-        usuario = models.Usuario(id=1, nombre="Bruno")
-        db.add(usuario)
-        db.commit()
-        db.refresh(usuario)
+        raise HTTPException(status_code=401, detail="Tenés que iniciar sesión")
     return usuario
 
 

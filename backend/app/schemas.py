@@ -3,6 +3,16 @@ from datetime import date
 from pydantic import BaseModel, ConfigDict, Field
 
 
+class LoginGoogleIn(BaseModel):
+    credential: str = Field(min_length=1)
+
+
+class SesionOut(BaseModel):
+    token: str
+    nombre: str
+    email: str
+
+
 class GastoFijoIn(BaseModel):
     nombre: str = Field(min_length=1)
     monto: float = Field(gt=0)
