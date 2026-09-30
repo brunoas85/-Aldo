@@ -58,7 +58,7 @@ function App() {
 
   const manejarSinClave = (err) => {
     if (err.response?.status !== 401) return false
-    setPedirClave((actual) => (actual === null && !err.config?.headers?.['X-Aldo-Clave'] ? 'nueva' : 'incorrecta'))
+    setPedirClave((actual) => (actual === null && !err.config?.headers?.['X-Mango-Clave'] ? 'nueva' : 'incorrecta'))
     return true
   }
 
@@ -153,7 +153,7 @@ function App() {
       {cargando && !dashboard && (
         <div className="mt-20 text-center text-sm text-gray-400">
           <p>Cargando...</p>
-          {despertando && <p className="mt-1">Aldo se está despertando, puede tardar hasta un minuto.</p>}
+          {despertando && <p className="mt-1">Mango se está despertando, puede tardar hasta un minuto.</p>}
         </div>
       )}
 

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { KeyRound } from 'lucide-react'
-import AldoAvatar from './AldoAvatar'
+import MangoAvatar from './MangoAvatar'
 
 export default function ClaveModal({ open, incorrecta, onSave }) {
   const [clave, setClave] = useState('')
@@ -14,12 +14,12 @@ export default function ClaveModal({ open, incorrecta, onSave }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4 sm:items-center">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm rounded-3xl bg-aldo-card p-6 shadow-xl">
+      <form onSubmit={handleSubmit} className="w-full max-w-sm rounded-3xl bg-mango-card p-6 shadow-xl">
         <div className="mb-4 flex items-center gap-3">
-          <AldoAvatar size="sm" />
+          <MangoAvatar size="sm" />
           <div>
             <h2 className="text-lg font-semibold text-gray-900">¿Sos vos?</h2>
-            <p className="text-sm text-gray-500">Poné tu clave de $Aldo. Te la pido una sola vez en este dispositivo.</p>
+            <p className="text-sm text-gray-500">Poné tu clave de Mango. Te la pido una sola vez en este dispositivo.</p>
           </div>
         </div>
 

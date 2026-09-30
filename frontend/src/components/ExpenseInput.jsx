@@ -18,7 +18,7 @@ export default function ExpenseInput({ onAdd, onOpenIngreso }) {
   }
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-100 bg-aldo-card/95 p-4 backdrop-blur">
+    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-100 bg-mango-card/95 p-4 backdrop-blur">
       <form onSubmit={handleSubmit} className="mx-auto flex w-full max-w-sm gap-2">
         <input
           type="number"

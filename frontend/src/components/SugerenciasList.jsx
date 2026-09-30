@@ -6,7 +6,7 @@ export default function SugerenciasList({ sugerencias }) {
   return (
     <div className="flex w-full max-w-sm flex-col gap-2">
       <span className="px-1 text-xs font-medium uppercase tracking-wide text-gray-400">
-        $Aldo te cuenta
+        Mango te cuenta
       </span>
       {sugerencias.map((texto, i) => (
         <div

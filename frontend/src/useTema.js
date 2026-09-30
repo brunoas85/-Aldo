@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-const CLAVE = 'aldo-tema'
+const CLAVE = 'mango-tema'
 
 // Arranca con lo que eligió el usuario; si nunca eligió, sigue al sistema.
 // index.html aplica la misma lógica antes de pintar para evitar el parpadeo.

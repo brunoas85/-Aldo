@@ -5,7 +5,7 @@ import axios from 'axios'
 const DOLARES_URL = 'https://dolarapi.com/v1/dolares'
 const OTRAS_URL = 'https://dolarapi.com/v1/cotizaciones'
 
-const CLAVE_CACHE = 'aldo-cotizaciones'
+const CLAVE_CACHE = 'mango-cotizaciones'
 const VIGENCIA_MS = 30 * 60 * 1000
 
 // Las casas que muestra la tarjeta, en este orden.

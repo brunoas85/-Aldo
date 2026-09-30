@@ -10,7 +10,7 @@ from . import models
 
 NOMBRES_DIAS = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
 
-MENSAJES_ALDO = [
+MENSAJES_MANGO = [
     "Vas bien, seguí así.",
     "Los gastos chiquitos suman: fijate cuánto te llevaron esta semana las compras de menos de $2.000.",
     "Anotar cada gasto ya es la mitad del trabajo. La otra mitad la hago yo.",
@@ -139,7 +139,7 @@ def generar_sugerencias(
             )
 
     if len(sugerencias) < 3:
-        mensaje_del_dia = random.Random(hoy.isoformat()).choice(MENSAJES_ALDO)
+        mensaje_del_dia = random.Random(hoy.isoformat()).choice(MENSAJES_MANGO)
         sugerencias.append(mensaje_del_dia)
 
     return sugerencias[:3]

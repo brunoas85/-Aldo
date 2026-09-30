@@ -19,7 +19,7 @@ function TooltipPersonalizado({ active, payload }) {
   if (!active || !payload?.length) return null
   const { categoria, monto } = payload[0].payload
   return (
-    <div className="rounded-lg bg-aldo-card px-3 py-2 text-xs shadow-md ring-1 ring-gray-100">
+    <div className="rounded-lg bg-mango-card px-3 py-2 text-xs shadow-md ring-1 ring-gray-100">
       <p className="font-medium text-gray-700">{categoria}</p>
       <p className="text-gray-500">{formatMonto(monto)}</p>
     </div>
@@ -33,7 +33,7 @@ export default function GastosFijosChart({ gastosFijos }) {
   const total = datos.reduce((acc, d) => acc + d.monto, 0)
 
   return (
-    <div className="w-full max-w-sm rounded-2xl bg-aldo-card p-4 shadow-sm ring-1 ring-gray-100">
+    <div className="w-full max-w-sm rounded-2xl bg-mango-card p-4 shadow-sm ring-1 ring-gray-100">
       <span className="text-sm font-medium text-gray-700">Gastos fijos por categoría</span>
 
       <div className="flex items-center gap-4">
@@ -47,7 +47,7 @@ export default function GastosFijosChart({ gastosFijos }) {
                 innerRadius={38}
                 outerRadius={64}
                 strokeWidth={2}
-                stroke="var(--color-aldo-card)"
+                stroke="var(--color-mango-card)"
                 isAnimationActive={false}
               >
                 {datos.map((d) => (

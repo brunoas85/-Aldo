@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { ChevronLeft, X } from 'lucide-react'
-import AldoAvatar from './AldoAvatar'
+import MangoAvatar from './MangoAvatar'
 import GastoFijoRow from './GastoFijoRow'
 import { CATEGORIAS } from '../categorias'
 
@@ -75,14 +75,14 @@ export default function ConfigWizard({ open, onSave, onClose, initialData }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4 sm:items-center">
-      <div className="flex w-full max-w-sm flex-col rounded-3xl bg-aldo-card p-6 shadow-xl">
+      <div className="flex w-full max-w-sm flex-col rounded-3xl bg-mango-card p-6 shadow-xl">
         <div className="mb-4 flex items-center gap-3">
           {paso > 0 && (
             <button type="button" onClick={atras} className="rounded-full p-1 text-gray-400 hover:bg-gray-100">
               <ChevronLeft size={20} />
             </button>
           )}
-          <AldoAvatar size="sm" />
+          <MangoAvatar size="sm" />
           <div className="flex-1">
             <h2 className="text-lg font-semibold text-gray-900">{TITULOS[paso]}</h2>
             <p className="text-xs text-gray-400">
@@ -105,7 +105,7 @@ export default function ConfigWizard({ open, onSave, onClose, initialData }) {
         <div className="flex min-h-[240px] flex-col gap-4 py-4">
           {paso === 0 && (
             <>
-              <p className="text-sm text-gray-500">Con esto $Aldo calcula cuánto podés gastar por día.</p>
+              <p className="text-sm text-gray-500">Con esto Mango calcula cuánto podés gastar por día.</p>
               <label className="block text-sm font-medium text-gray-700">
                 Ingresos totales del mes
                 <input
@@ -129,7 +129,7 @@ export default function ConfigWizard({ open, onSave, onClose, initialData }) {
                   className="mt-1 w-full rounded-xl border border-gray-300 px-4 py-3 text-lg focus:border-emerald-500 focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                 />
                 <span className="mt-1 block text-xs text-gray-400">
-                  El día del mes en que te pagan. $Aldo arma tu ciclo a partir de ahí.
+                  El día del mes en que te pagan. Mango arma tu ciclo a partir de ahí.
                 </span>
               </label>
             </>
@@ -137,7 +137,7 @@ export default function ConfigWizard({ open, onSave, onClose, initialData }) {
 
           {paso === 1 && (
             <>
-              <p className="text-sm text-gray-500">Cargá cada gasto fijo por separado, así $Aldo sabe en qué se te va la plata.</p>
+              <p className="text-sm text-gray-500">Cargá cada gasto fijo por separado, así Mango sabe en qué se te va la plata.</p>
               <div className="flex flex-col gap-2">
                 {gastosFijos.map((g, i) => (
                   <GastoFijoRow
@@ -167,7 +167,7 @@ export default function ConfigWizard({ open, onSave, onClose, initialData }) {
           {paso === 2 && (
             <>
               <p className="text-sm text-gray-500">
-                Opcional. $Aldo la descuenta de tu presupuesto diario como si fuera otro gasto fijo, para que
+                Opcional. Mango la descuenta de tu presupuesto diario como si fuera otro gasto fijo, para que
                 ahorrar no dependa de tu fuerza de voluntad.
               </p>
               <label className="block text-sm font-medium text-gray-700">

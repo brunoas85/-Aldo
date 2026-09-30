@@ -91,8 +91,8 @@ def migrar(origen_url: str, destino_url: str) -> dict[str, int]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Copia los datos de $Aldo de SQLite a Neon (Postgres).")
-    parser.add_argument("--origen", default=str(BACKEND_DIR / "aldo.db"), help="archivo SQLite (default: aldo.db)")
+    parser = argparse.ArgumentParser(description="Copia los datos de Mango de SQLite a Neon (Postgres).")
+    parser.add_argument("--origen", default=str(BACKEND_DIR / "mango.db"), help="archivo SQLite (default: mango.db)")
     args = parser.parse_args()
 
     origen = Path(args.origen)

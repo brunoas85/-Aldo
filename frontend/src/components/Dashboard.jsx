@@ -1,5 +1,5 @@
 import { Calendar, Landmark, PiggyBank, Receipt, Scale, Wallet } from 'lucide-react'
-import AldoAvatar from './AldoAvatar'
+import MangoAvatar from './MangoAvatar'
 import StatCard from './StatCard'
 
 const GRADIENTES = {
@@ -30,7 +30,7 @@ export default function Dashboard({
   return (
     <div className="flex w-full max-w-sm flex-col items-center gap-4">
       <div className="flex w-full items-center gap-3">
-        <AldoAvatar estado={estado} />
+        <MangoAvatar estado={estado} />
         <div className="text-left">
           <p className="text-sm text-gray-400">¿Qué onda, {nombre}?</p>
           <p className="text-sm font-medium text-gray-600">Hoy tenés para gastar</p>

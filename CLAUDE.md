@@ -1,6 +1,6 @@
-# Claude.md - Proyecto: $Aldo (Tu saldo diario, amigable y sin vueltas)
+# Claude.md - Proyecto: Mango (Tu plata del día, amigable y sin vueltas)
 
-**$Aldo** es una app de finanzas personales simplificada: le muestra al usuario únicamente cuánto puede gastar **hoy**, sin culpa y sin planillas. La app personifica el dinero en "Aldo", un asistente amigable que te cuida el bolsillo.
+**Mango** es una app de finanzas personales simplificada: le muestra al usuario únicamente cuánto puede gastar **hoy**, sin culpa y sin planillas. La app personifica el dinero en "Mango", un asistente amigable que te cuida el bolsillo.
 
 ---
 
@@ -9,16 +9,16 @@ Al abrir la app, lo protagonista es:
 1. **El saldo disponible para HOY**: un número gigante con la pregunta *¿Qué onda, Bruno? Hoy tenés para gastar...*, con color según la salud financiera.
 2. **Un input ultra rápido** para restar un gasto en el momento.
 
-Como apoyo secundario: una configuración en wizard (ingresos, día de cobro, gastos fijos, meta de ahorro), ingresos extra, historial editable, sugerencias de Aldo y gráficos del ciclo.
+Como apoyo secundario: una configuración en wizard (ingresos, día de cobro, gastos fijos, meta de ahorro), ingresos extra, historial editable, sugerencias de Mango y gráficos del ciclo.
 
 **Regla de Oro:** cero fricción. Registrar un gasto tiene que tomar menos de 3 segundos desde que abrís la app. Todo lo secundario no puede competir visualmente con el número del día.
 
 ---
 
 ## 🛠️ Stack Tecnológico
-*   **Frontend:** React 19 + Vite + Tailwind CSS 4, mobile-first (`frontend/`). Modo oscuro con la clase `.dark` en `<html>` (`useTema.js`): en `index.css` se invierte la escala de grises y `bg-aldo-card` reemplaza a `bg-white`, así que en los componentes nuevos usá grises y `bg-aldo-card`, y agregá `dark:` solo para los colores con tinte.
+*   **Frontend:** React 19 + Vite + Tailwind CSS 4, mobile-first (`frontend/`). Modo oscuro con la clase `.dark` en `<html>` (`useTema.js`): en `index.css` se invierte la escala de grises y `bg-mango-card` reemplaza a `bg-white`, así que en los componentes nuevos usá grises y `bg-mango-card`, y agregá `dark:` solo para los colores con tinte.
 *   **Backend:** FastAPI + SQLAlchemy + Pydantic v2 (`backend/`).
-*   **Base de Datos:** SQLite en local (`backend/aldo.db`) y PostgreSQL (Neon) en producción, elegida con `ALDO_DATABASE_URL`. Migraciones Alembic (`backend/migrations/`) que tienen que funcionar en los dos motores.
+*   **Base de Datos:** SQLite en local (`backend/mango.db`) y PostgreSQL (Neon) en producción, elegida con `MANGO_DATABASE_URL`. Migraciones Alembic (`backend/migrations/`) que tienen que funcionar en los dos motores.
 
 ### Cómo levantarlo
 ```bash
@@ -27,7 +27,7 @@ venv\Scripts\activate
 pip install -r requirements-dev.txt
 uvicorn main:app --reload          # http://localhost:8000  ·  Swagger en /docs
                                    # al arrancar aplica las migraciones pendientes
-pytest                             # tests (usan una base temporal, nunca aldo.db)
+pytest                             # tests (usan una base temporal, nunca mango.db)
 alembic revision -m "descripcion"  # nueva migración (escribirla a mano en migrations/versions/)
 
 # Frontend (desde frontend/)
@@ -36,14 +36,14 @@ npm run lint && npm run build      # verificación
 ```
 
 ### Producción (Render + Neon + Vercel)
-*   **Backend en Render** con `render.yaml` (Blueprint). Variables: `ALDO_DATABASE_URL` (connection string de Neon, `postgresql://...`), `ALDO_API_KEY` (la genera Render) y `ALDO_CORS_ORIGINS` (URL del frontend, separadas por coma si hay varias).
+*   **Backend en Render** con `render.yaml` (Blueprint). Variables: `MANGO_DATABASE_URL` (connection string de Neon, `postgresql://...`), `MANGO_API_KEY` (la genera Render) y `MANGO_CORS_ORIGINS` (URL del frontend, separadas por coma si hay varias).
 *   **Frontend en Vercel** con Root Directory `frontend/` y `VITE_API_URL` = URL del backend en Render (sin `/api` al final).
 *   **Pasar los datos locales a Neon:** `python -m scripts.migrar_a_neon` (desde `backend/`). Pide la URL sin mostrarla, crea las tablas, copia todo en una transacción y no hace nada si el destino ya tiene datos.
-*   Si `ALDO_API_KEY` no está definida, la API queda abierta. Eso solo tiene sentido en desarrollo local.
+*   Si `MANGO_API_KEY` no está definida, la API queda abierta. Eso solo tiene sentido en desarrollo local.
 
 ---
 
-## 🧮 Fórmula Core de $Aldo
+## 🧮 Fórmula Core de Mango
 El presupuesto se calcula por **ciclo de cobro**, no por mes calendario. El ciclo va desde el `dia_cobro` hasta el día anterior al próximo cobro (con ajuste para meses cortos).
 
 $$Pool = Ingresos\ del\ mes + Ingresos\ extra\ del\ ciclo - Gastos\ fijos - Meta\ de\ ahorro - Gastado\ en\ el\ ciclo$$
@@ -59,7 +59,7 @@ $$Presupuesto\ de\ hoy = \frac{Pool + Gastado\ hoy}{Días\ restantes\ (incluye\ 
 ## 🔌 Contrato de API
 Todas las mutaciones devuelven el **`DashboardOut` completo**, así el frontend reemplaza su estado sin recalcular nada. Si el usuario nunca configuró nada, las rutas responden `404`. Si los datos no son válidos, responden `422`.
 
-**Clave:** si el server tiene `ALDO_API_KEY`, todas las rutas salvo `/api/health` exigen el header `X-Aldo-Clave` con ese valor, y sin él responden `401`. El frontend pide la clave la primera vez y la guarda en `localStorage`.
+**Clave:** si el server tiene `MANGO_API_KEY`, todas las rutas salvo `/api/health` exigen el header `X-Mango-Clave` con ese valor, y sin él responden `401`. El frontend pide la clave la primera vez y la guarda en `localStorage`.
 
 | Método | Ruta | Body | Notas |
 |---|---|---|---|

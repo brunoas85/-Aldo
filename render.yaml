@@ -1,8 +1,8 @@
-# Blueprint de Render para el backend de $Aldo.
+# Blueprint de Render para el backend de Mango.
 # En Render: New > Blueprint > elegí este repo. Te va a pedir los valores marcados con sync: false.
 services:
   - type: web
-    name: aldo-api
+    name: mango-api
     runtime: python
     plan: free
     rootDir: backend
@@ -13,9 +13,9 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: "3.13"
-      - key: ALDO_DATABASE_URL
+      - key: MANGO_DATABASE_URL
         sync: false # connection string de Neon: postgresql://...?sslmode=require
-      - key: ALDO_CORS_ORIGINS
-        sync: false # URL del frontend en Vercel, ej. https://aldo.vercel.app
-      - key: ALDO_API_KEY
+      - key: MANGO_CORS_ORIGINS
+        sync: false # URL del frontend en Vercel, ej. https://mango.vercel.app
+      - key: MANGO_API_KEY
         generateValue: true # la clave que vas a cargar en la app; la ves en Environment

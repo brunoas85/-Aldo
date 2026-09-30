@@ -4,16 +4,16 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-aldo-bien: #10b981;
-  --color-aldo-bien-soft: #d1fae5;
-  --color-aldo-alerta: #f59e0b;
-  --color-aldo-alerta-soft: #fef3c7;
-  --color-aldo-critico: #ef4444;
-  --color-aldo-critico-soft: #fee2e2;
-  --color-aldo-ink: #171321;
-  --color-aldo-surface: #faf9fc;
-  --color-aldo-card: #ffffff;
-  --color-aldo-grid: #e1e0d9;
+  --color-mango-bien: #10b981;
+  --color-mango-bien-soft: #d1fae5;
+  --color-mango-alerta: #f59e0b;
+  --color-mango-alerta-soft: #fef3c7;
+  --color-mango-critico: #ef4444;
+  --color-mango-critico-soft: #fee2e2;
+  --color-mango-ink: #171321;
+  --color-mango-surface: #faf9fc;
+  --color-mango-card: #ffffff;
+  --color-mango-grid: #e1e0d9;
 }
 
 /*
@@ -23,9 +23,9 @@
  */
 .dark {
   color-scheme: dark;
-  --color-aldo-surface: #110f17;
-  --color-aldo-card: #1a1722;
-  --color-aldo-grid: #2f2b3a;
+  --color-mango-surface: #110f17;
+  --color-mango-card: #1a1722;
+  --color-mango-grid: #2f2b3a;
   --color-gray-50: #1f1c28;
   --color-gray-100: #2a2634;
   --color-gray-200: #353040;
@@ -42,5 +42,5 @@
 body {
   margin: 0;
   font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
-  background: var(--color-aldo-surface);
+  background: var(--color-mango-surface);
 }

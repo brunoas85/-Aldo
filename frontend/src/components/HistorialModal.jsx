@@ -100,7 +100,7 @@ export default function HistorialModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4 sm:items-center">
-      <div className="flex max-h-[80vh] w-full max-w-sm flex-col rounded-3xl bg-aldo-card p-6 shadow-xl">
+      <div className="flex max-h-[80vh] w-full max-w-sm flex-col rounded-3xl bg-mango-card p-6 shadow-xl">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-900">Tus movimientos</h2>
           <button type="button" onClick={onClose} className="rounded-full p-1 text-gray-400 hover:bg-gray-100">

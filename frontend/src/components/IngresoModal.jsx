@@ -25,7 +25,7 @@ export default function IngresoModal({ open, onSave, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4 sm:items-center">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm rounded-3xl bg-aldo-card p-6 shadow-xl">
+      <form onSubmit={handleSubmit} className="w-full max-w-sm rounded-3xl bg-mango-card p-6 shadow-xl">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-900">Sumaste un ingreso</h2>
           <button type="button" onClick={onClose} className="rounded-full p-1 text-gray-400 hover:bg-gray-100">

@@ -6,7 +6,7 @@ from app.migraciones import aplicar_migraciones
 
 
 def test_base_vieja_sin_alembic_se_migra_sin_perder_datos(client, alembic_cfg):
-    """Simula una aldo.db creada con create_all antes de Alembic: tiene el esquema
+    """Simula una mango.db creada con create_all antes de Alembic: tiene el esquema
     de 0001 con datos, pero no tiene la tabla alembic_version."""
     command.downgrade(alembic_cfg, "base")
     command.upgrade(alembic_cfg, "0001")

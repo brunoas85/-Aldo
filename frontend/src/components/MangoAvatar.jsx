@@ -4,7 +4,7 @@ const CARAS = {
   critico: '😬',
 }
 
-export default function AldoAvatar({ estado = 'bien', size = 'lg' }) {
+export default function MangoAvatar({ estado = 'bien', size = 'lg' }) {
   const dimensiones = size === 'lg' ? 'h-16 w-16 text-3xl' : 'h-10 w-10 text-xl'
 
   return (

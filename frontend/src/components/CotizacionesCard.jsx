@@ -3,7 +3,7 @@ import { DollarSign } from 'lucide-react'
 import { getCotizaciones } from '../api/cotizaciones'
 
 const NOMBRE_CASA = { oficial: 'Oficial', blue: 'Blue', bolsa: 'MEP', tarjeta: 'Tarjeta' }
-const CLAVE_MONEDA = 'aldo-moneda-cotizacion'
+const CLAVE_MONEDA = 'mango-moneda-cotizacion'
 
 const formatPesos = (valor, decimales = 0) =>
   new Intl.NumberFormat('es-AR', {
@@ -32,7 +32,7 @@ function Pestana({ activa, onClick, children }) {
       type="button"
       onClick={onClick}
       className={`rounded-lg px-3 py-1 text-xs font-medium transition-colors ${
-        activa ? 'bg-aldo-card text-gray-900 shadow-sm' : 'text-gray-500'
+        activa ? 'bg-mango-card text-gray-900 shadow-sm' : 'text-gray-500'
       }`}
     >
       {children}
@@ -67,7 +67,7 @@ export default function CotizacionesCard({ presupuestoDiario }) {
   const saldoPositivo = presupuestoDiario > 0
 
   return (
-    <div className="w-full max-w-sm rounded-2xl bg-aldo-card p-4 shadow-sm ring-1 ring-gray-100">
+    <div className="w-full max-w-sm rounded-2xl bg-mango-card p-4 shadow-sm ring-1 ring-gray-100">
       <div className="mb-3 flex items-center justify-between">
         <span className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
           <DollarSign size={15} className="text-gray-400" />

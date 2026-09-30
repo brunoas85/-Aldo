@@ -12,14 +12,14 @@ from .logic import calcular_dashboard
 __all__ = ["get_db", "get_usuario_actual", "get_hoy", "dashboard_o_404", "verificar_clave"]
 
 
-def verificar_clave(x_aldo_clave: str | None = Header(default=None)) -> None:
-    """Protección mínima mientras no haya login: si el server tiene ALDO_API_KEY,
-    cada request tiene que mandar esa misma clave en el header X-Aldo-Clave.
+def verificar_clave(x_mango_clave: str | None = Header(default=None)) -> None:
+    """Protección mínima mientras no haya login: si el server tiene MANGO_API_KEY,
+    cada request tiene que mandar esa misma clave en el header X-Mango-Clave.
     Se lee en cada request para que los tests puedan activarla con monkeypatch."""
-    clave = os.environ.get("ALDO_API_KEY")
+    clave = os.environ.get("MANGO_API_KEY")
     if not clave:
         return
-    if x_aldo_clave is None or not secrets.compare_digest(x_aldo_clave, clave):
+    if x_mango_clave is None or not secrets.compare_digest(x_mango_clave, clave):
         raise HTTPException(status_code=401, detail="Clave incorrecta")
 
 

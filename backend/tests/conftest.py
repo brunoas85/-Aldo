@@ -5,9 +5,9 @@ from pathlib import Path
 
 import pytest
 
-# Tiene que definirse antes de importar la app: nunca tocar backend/aldo.db desde los tests.
-_TMP_DIR = tempfile.mkdtemp(prefix="aldo-tests-")
-os.environ["ALDO_DATABASE_URL"] = f"sqlite:///{Path(_TMP_DIR) / 'test.db'}"
+# Tiene que definirse antes de importar la app: nunca tocar backend/mango.db desde los tests.
+_TMP_DIR = tempfile.mkdtemp(prefix="mango-tests-")
+os.environ["MANGO_DATABASE_URL"] = f"sqlite:///{Path(_TMP_DIR) / 'test.db'}"
 
 from alembic import command  # noqa: E402
 from alembic.config import Config  # noqa: E402

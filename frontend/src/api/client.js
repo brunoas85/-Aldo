@@ -6,8 +6,8 @@ const api = axios.create({
   baseURL: `${import.meta.env.VITE_API_URL ?? ''}/api`,
 })
 
-// Clave de la API (ALDO_API_KEY del server). Se pide una vez y queda en este dispositivo.
-const CLAVE_STORAGE = 'aldo-clave'
+// Clave de la API (MANGO_API_KEY del server). Se pide una vez y queda en este dispositivo.
+const CLAVE_STORAGE = 'mango-clave'
 
 export function guardarClave(clave) {
   try {
@@ -20,7 +20,7 @@ export function guardarClave(clave) {
 api.interceptors.request.use((config) => {
   try {
     const clave = localStorage.getItem(CLAVE_STORAGE)
-    if (clave) config.headers['X-Aldo-Clave'] = clave
+    if (clave) config.headers['X-Mango-Clave'] = clave
   } catch {
     // sin localStorage el server responde 401 y se pide la clave
   }

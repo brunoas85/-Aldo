@@ -4,8 +4,8 @@ from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-# Por defecto la base vive en backend/aldo.db, sin importar desde dónde se levante el server.
-# Los tests y producción (Postgres en Neon) la cambian con la variable de entorno ALDO_DATABASE_URL.
+# Por defecto la base vive en backend/mango.db, sin importar desde dónde se levante el server.
+# Los tests y producción (Postgres en Neon) la cambian con la variable de entorno MANGO_DATABASE_URL.
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -19,7 +19,7 @@ def normalizar_url(url: str) -> str:
 
 
 SQLALCHEMY_DATABASE_URL = normalizar_url(
-    os.environ.get("ALDO_DATABASE_URL", f"sqlite:///{BACKEND_DIR / 'aldo.db'}")
+    os.environ.get("MANGO_DATABASE_URL", f"sqlite:///{BACKEND_DIR / 'mango.db'}")
 )
 ES_SQLITE = SQLALCHEMY_DATABASE_URL.startswith("sqlite")
 
