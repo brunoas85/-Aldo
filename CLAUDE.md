@@ -39,6 +39,7 @@ npm run lint && npm run build      # verificación
 *   **Backend en Render** con `render.yaml` (Blueprint). Variables: `MANGO_DATABASE_URL` (connection string de Neon, `postgresql://...`), `MANGO_CORS_ORIGINS` (URL del frontend, separadas por coma si hay varias), `MANGO_GOOGLE_CLIENT_ID` (ID de cliente OAuth de Google Cloud), `MANGO_SECRET` (firma las sesiones, la genera Render) y `MANGO_EMAIL_USUARIO_INICIAL` (email de Google que se queda con los datos del usuario id=1, de antes del login).
 *   **Frontend en Vercel** con Root Directory `frontend/` y `VITE_API_URL` = URL del backend en Render (sin `/api` al final) y `VITE_GOOGLE_CLIENT_ID` = el mismo ID de cliente que el backend.
 *   **Pasar los datos locales a Neon:** `python -m scripts.migrar_a_neon` (desde `backend/`). Pide la URL sin mostrarla, crea las tablas, copia todo en una transacción y no hace nada si el destino ya tiene datos.
+*   **Si el login creó una cuenta vacía en vez de tomar los datos de antes:** `python -m scripts.asociar_usuario_inicial --email tu@gmail.com` (desde `backend/`). Le pasa esa cuenta al usuario id=1 y borra la vacía; no hace nada si la vacía ya tiene datos.
 *   **Google Cloud:** el ID de cliente OAuth (tipo "Aplicación web") tiene que tener como orígenes autorizados la URL de Vercel y `http://localhost:5173`. En local, definí `MANGO_GOOGLE_CLIENT_ID` antes de `uvicorn` y creá `frontend/.env.local` con `VITE_GOOGLE_CLIENT_ID`. Sin `MANGO_SECRET`, las sesiones duran hasta que se reinicia el server.
 
 ---
