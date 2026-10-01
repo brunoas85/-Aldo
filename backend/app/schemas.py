@@ -1,10 +1,31 @@
 from datetime import date
 
-from pydantic import BaseModel, ConfigDict, Field
+from typing import Annotated
+
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field, field_validator
+
+# Validación mínima a propósito: algo@algo.algo. Se guarda en minúsculas.
+Email = Annotated[
+    str,
+    Field(max_length=254, pattern=r"^\s*[^@\s]+@[^@\s]+\.[^@\s]+\s*$"),
+    AfterValidator(lambda v: v.strip().lower()),
+]
 
 
-class LoginGoogleIn(BaseModel):
-    credential: str = Field(min_length=1)
+class LoginIn(BaseModel):
+    email: Email
+    password: str = Field(min_length=1, max_length=200)
+
+
+class RegistroIn(BaseModel):
+    nombre: str = Field(max_length=50, pattern=r"\S")
+    email: Email
+    password: str = Field(min_length=8, max_length=200)
+
+    @field_validator("nombre")
+    @classmethod
+    def _sin_espacios_de_mas(cls, v: str) -> str:
+        return v.strip()
 
 
 class SesionOut(BaseModel):

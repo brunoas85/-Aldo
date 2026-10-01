@@ -23,7 +23,7 @@ def test_base_vieja_sin_alembic_se_migra_sin_perder_datos(client_anonimo, alembi
     aplicar_migraciones()
 
     with engine.connect() as conn:
-        assert conn.execute(text("SELECT version_num FROM alembic_version")).scalar() == "0003"
+        assert conn.execute(text("SELECT version_num FROM alembic_version")).scalar() == "0004"
         assert conn.execute(text("SELECT count(*) FROM configuraciones_mensuales")).scalar() == 1
     indices = {i["name"] for i in inspect(engine).get_indexes("configuraciones_mensuales")}
     assert "uq_config_usuario_ciclo" in indices
@@ -33,4 +33,22 @@ def test_aplicar_migraciones_es_idempotente(client_anonimo):
     aplicar_migraciones()
     aplicar_migraciones()
     with engine.connect() as conn:
-        assert conn.execute(text("SELECT version_num FROM alembic_version")).scalar() == "0003"
+        assert conn.execute(text("SELECT version_num FROM alembic_version")).scalar() == "0004"
+
+
+def test_usuarios_de_google_conservan_sus_datos_sin_contrasena(client_anonimo, alembic_cfg):
+    command.downgrade(alembic_cfg, "0003")
+    with engine.begin() as conn:
+        conn.execute(
+            text(
+                "INSERT INTO usuarios (id, nombre, dia_cobro, google_sub, email) "
+                "VALUES (1, 'Bruno', 1, 'google-bruno', ' Bruno@Gmail.com')"
+            )
+        )
+
+    command.upgrade(alembic_cfg, "head")
+
+    with engine.connect() as conn:
+        fila = conn.execute(text("SELECT id, email, password_hash FROM usuarios")).one()
+    assert tuple(fila) == (1, "bruno@gmail.com", None)
+    assert "google_sub" not in {c["name"] for c in inspect(engine).get_columns("usuarios")}

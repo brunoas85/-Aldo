@@ -1,12 +1,13 @@
-"""Login con Google y sesiones propias.
+"""Login con email y contraseña, y sesiones propias.
 
-El frontend obtiene un ID token de Google (botón "Entrar con Google") y lo manda a
-/api/auth/google. Acá se verifica la firma contra las claves públicas de Google y, si
-está todo bien, se devuelve un token de sesión nuestro (JWT firmado con MANGO_SECRET)
+La contraseña se guarda hasheada con scrypt (librería estándar, salt al azar por usuario).
+Al registrarse o entrar se devuelve un token de sesión (JWT firmado con MANGO_SECRET)
 que el frontend manda en cada request como "Authorization: Bearer <token>".
 """
 
-import logging
+import base64
+import hashlib
+import hmac
 import os
 import secrets
 from datetime import datetime, timedelta, timezone
@@ -14,43 +15,40 @@ from datetime import datetime, timedelta, timezone
 import jwt
 
 DURACION_SESION = timedelta(days=60)
-EMISORES_GOOGLE = ("accounts.google.com", "https://accounts.google.com")
-# Tolerancia para relojes desfasados: si el del server atrasa, el token de Google
-# parece emitido "en el futuro" y se rechazaría sin este margen.
-MARGEN_RELOJ = timedelta(minutes=5)
 
-log = logging.getLogger(__name__)
+# Parámetros de scrypt: ~16 MB de memoria y unas decenas de ms por intento.
+_SCRYPT_N, _SCRYPT_R, _SCRYPT_P = 2**14, 8, 1
 
 # Sin MANGO_SECRET (desarrollo local) se usa una clave al azar: las sesiones valen
 # hasta que se reinicia el server. En producción Render la genera (render.yaml).
 _SECRETO_TEMPORAL = secrets.token_urlsafe(32)
-_claves_google = jwt.PyJWKClient("https://www.googleapis.com/oauth2/v3/certs", cache_keys=True)
-
-
-class ErrorAuth(Exception):
-    pass
 
 
 def _secreto() -> str:
     return os.environ.get("MANGO_SECRET") or _SECRETO_TEMPORAL
 
 
-def verificar_token_google(credential: str) -> dict:
-    """Devuelve los datos de la cuenta (sub, email, given_name...) o lanza ErrorAuth."""
-    client_id = os.environ.get("MANGO_GOOGLE_CLIENT_ID")
-    if not client_id:
-        raise ErrorAuth("El server no tiene configurado MANGO_GOOGLE_CLIENT_ID")
+def _b64(datos: bytes) -> str:
+    return base64.b64encode(datos).decode()
+
+
+def hashear_password(password: str) -> str:
+    salt = secrets.token_bytes(16)
+    hash_ = hashlib.scrypt(password.encode(), salt=salt, n=_SCRYPT_N, r=_SCRYPT_R, p=_SCRYPT_P)
+    return f"scrypt${_SCRYPT_N}${_SCRYPT_R}${_SCRYPT_P}${_b64(salt)}${_b64(hash_)}"
+
+
+def verificar_password(password: str, guardado: str | None) -> bool:
     try:
-        clave = _claves_google.get_signing_key_from_jwt(credential)
-        datos = jwt.decode(
-            credential, clave.key, algorithms=["RS256"], audience=client_id, leeway=MARGEN_RELOJ
+        algoritmo, n, r, p, salt, hash_ = (guardado or "").split("$")
+        if algoritmo != "scrypt":
+            return False
+        calculado = hashlib.scrypt(
+            password.encode(), salt=base64.b64decode(salt), n=int(n), r=int(r), p=int(p)
         )
-    except jwt.PyJWTError as e:
-        log.warning("Login de Google rechazado: %s: %s", type(e).__name__, e)
-        raise ErrorAuth("El login de Google no es válido") from e
-    if datos.get("iss") not in EMISORES_GOOGLE or not datos.get("email_verified"):
-        raise ErrorAuth("El login de Google no es válido")
-    return datos
+    except ValueError:
+        return False
+    return hmac.compare_digest(calculado, base64.b64decode(hash_))
 
 
 def crear_sesion(usuario_id: int) -> str:

@@ -6,7 +6,7 @@ const api = axios.create({
   baseURL: `${import.meta.env.VITE_API_URL ?? ''}/api`,
 })
 
-// Token de sesión que devuelve /api/auth/google. Queda en este dispositivo hasta que
+// Token de sesión que devuelven /api/auth/login y /api/auth/registro. Queda en este dispositivo hasta que
 // cerrás sesión o vence (60 días); ahí el server responde 401 y se vuelve al login.
 const SESION_STORAGE = 'mango-sesion'
 
@@ -34,8 +34,7 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-export async function loginConGoogle(credential) {
-  const { data } = await api.post('/auth/google', { credential })
+const guardarSesion = ({ data }) => {
   try {
     localStorage.setItem(SESION_STORAGE, data.token)
   } catch {
@@ -44,6 +43,10 @@ export async function loginConGoogle(credential) {
   }
   return data
 }
+
+export const entrar = (datos) => api.post('/auth/login', datos).then(guardarSesion)
+
+export const registrarse = (datos) => api.post('/auth/registro', datos).then(guardarSesion)
 
 export const getDashboard = () => api.get('/dashboard').then((res) => res.data)
 

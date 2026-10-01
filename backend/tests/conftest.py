@@ -15,7 +15,6 @@ from fastapi.testclient import TestClient  # noqa: E402
 
 from app.database import BACKEND_DIR, SessionLocal  # noqa: E402
 from app.deps import get_hoy  # noqa: E402
-from app.routers import auth as auth_router  # noqa: E402
 from main import app  # noqa: E402
 
 
@@ -37,14 +36,13 @@ def client_anonimo(alembic_cfg):
 
 
 @pytest.fixture
-def entrar(client_anonimo, monkeypatch):
-    """Simula el login con Google (sin hablar con Google) y devuelve la respuesta:
-    entrar(sub="otro", email="otra@example.com", nombre="Ana")."""
+def entrar(client_anonimo):
+    """Registra una cuenta y devuelve la respuesta:
+    entrar(email="ana@example.com", nombre="Ana", password="otra-clave")."""
 
-    def _entrar(sub="google-bruno", email="bruno@example.com", nombre="Bruno"):
-        datos = {"sub": sub, "email": email, "given_name": nombre, "email_verified": True}
-        monkeypatch.setattr(auth_router, "verificar_token_google", lambda _credential: datos)
-        return client_anonimo.post("/api/auth/google", json={"credential": "token-de-google"})
+    def _entrar(email="bruno@example.com", nombre="Bruno", password="clave-segura"):
+        datos = {"email": email, "nombre": nombre, "password": password}
+        return client_anonimo.post("/api/auth/registro", json=datos)
 
     return _entrar
 

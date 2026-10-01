@@ -36,11 +36,12 @@ npm run lint && npm run build      # verificación
 ```
 
 ### Producción (Render + Neon + Vercel)
-*   **Backend en Render** con `render.yaml` (Blueprint). Variables: `MANGO_DATABASE_URL` (connection string de Neon, `postgresql://...`), `MANGO_CORS_ORIGINS` (URL del frontend, separadas por coma si hay varias), `MANGO_GOOGLE_CLIENT_ID` (ID de cliente OAuth de Google Cloud), `MANGO_SECRET` (firma las sesiones, la genera Render) y `MANGO_EMAIL_USUARIO_INICIAL` (email de Google que se queda con los datos del usuario id=1, de antes del login).
-*   **Frontend en Vercel** con Root Directory `frontend/` y `VITE_API_URL` = URL del backend en Render (sin `/api` al final) y `VITE_GOOGLE_CLIENT_ID` = el mismo ID de cliente que el backend.
+*   **Backend en Render** con `render.yaml` (Blueprint). Variables: `MANGO_DATABASE_URL` (connection string de Neon, `postgresql://...`), `MANGO_CORS_ORIGINS` (URL del frontend, separadas por coma si hay varias), `MANGO_SECRET` (firma las sesiones, la genera Render) y `MANGO_EMAIL_USUARIO_INICIAL` (email que, al registrarse, se queda con los datos del usuario id=1, de antes del login).
+*   **Frontend en Vercel** con Root Directory `frontend/` y `VITE_API_URL` = URL del backend en Render (sin `/api` al final).
 *   **Pasar los datos locales a Neon:** `python -m scripts.migrar_a_neon` (desde `backend/`). Pide la URL sin mostrarla, crea las tablas, copia todo en una transacción y no hace nada si el destino ya tiene datos.
-*   **Si el login creó una cuenta vacía en vez de tomar los datos de antes:** `python -m scripts.asociar_usuario_inicial --email tu@gmail.com` (desde `backend/`). Le pasa esa cuenta al usuario id=1 y borra la vacía; no hace nada si la vacía ya tiene datos.
-*   **Google Cloud:** el ID de cliente OAuth (tipo "Aplicación web") tiene que tener como orígenes autorizados la URL de Vercel y `http://localhost:5173`. En local, definí `MANGO_GOOGLE_CLIENT_ID` antes de `uvicorn` y creá `frontend/.env.local` con `VITE_GOOGLE_CLIENT_ID`. Sin `MANGO_SECRET`, las sesiones duran hasta que se reinicia el server.
+*   **Si el registro creó una cuenta vacía en vez de tomar los datos de antes:** `python -m scripts.asociar_usuario_inicial --email tu@gmail.com` (desde `backend/`). Le pasa esa cuenta (email y contraseña) al usuario id=1 y borra la vacía; no hace nada si la vacía ya tiene datos.
+*   **Si alguien se olvidó la contraseña:** `python -m scripts.resetear_contrasena --email alguien@gmail.com` (desde `backend/`). Pide la URL de la base y la contraseña nueva sin mostrarlas. No hay recuperación por mail.
+*   Sin `MANGO_SECRET`, las sesiones duran hasta que se reinicia el server.
 
 ---
 
@@ -60,11 +61,12 @@ $$Presupuesto\ de\ hoy = \frac{Pool + Gastado\ hoy}{Días\ restantes\ (incluye\ 
 ## 🔌 Contrato de API
 Todas las mutaciones devuelven el **`DashboardOut` completo**, así el frontend reemplaza su estado sin recalcular nada. Si el usuario nunca configuró nada, las rutas responden `404`. Si los datos no son válidos, responden `422`.
 
-**Sesión:** cada usuario entra con Google. El frontend manda el ID token de Google a `/api/auth/google` y recibe un token de sesión propio (JWT, 60 días) que guarda en `localStorage` y manda como `Authorization: Bearer <token>`. Todas las rutas salvo `/api/auth/google` y `/api/health` lo exigen, y sin él (o vencido) responden `401`. Cada usuario ve y toca solo sus datos: un id ajeno da `404`.
+**Sesión:** cada usuario se registra y entra con email y contraseña (hasheada con scrypt; el email se guarda en minúsculas). Recibe un token de sesión propio (JWT, 60 días) que el frontend guarda en `localStorage` y manda como `Authorization: Bearer <token>`. Todas las rutas salvo `/api/auth/*` y `/api/health` lo exigen, y sin él (o vencido) responden `401`. Cada usuario ve y toca solo sus datos: un id ajeno da `404`.
 
 | Método | Ruta | Body | Notas |
 |---|---|---|---|
-| `POST` | `/api/auth/google` | `{credential}` (ID token de Google) | Devuelve `{token, nombre, email}`. Crea el usuario si es nuevo. 401 si el token de Google no es válido |
+| `POST` | `/api/auth/registro` | `{nombre, email, password (min 8)}` | Devuelve `{token, nombre, email}`. 409 si el email ya tiene contraseña. Si el email era de una cuenta de Google (sin contraseña), se queda con sus datos |
+| `POST` | `/api/auth/login` | `{email, password}` | Devuelve `{token, nombre, email}`. 401 si no coinciden o si la cuenta era de Google y todavía no se registró |
 | `GET` | `/api/dashboard` | — | 404 si nunca se configuró |
 | `POST` | `/api/config` | `{ingresos_mensuales>0, dia_cobro 1-31, meta_ahorro>=0, gastos_fijos:[{nombre, monto>0, categoria?}]}` | Crea o actualiza la config del ciclo actual |
 | `POST` | `/api/gastos` | `{monto>0, descripcion?}` | Fecha = hoy |
@@ -96,4 +98,6 @@ Hay dos subagentes definidos en `.claude/agents/`, cada uno con sus reglas espec
 *   Zona horaria: hoy se usa `date.today()` del servidor. Falta respetar la zona del usuario.
 *   La plata se guarda como `Float`. Conviene migrar a centavos (`Integer`) o `Numeric`.
 *   No hay tests de frontend.
+*   El login no tiene límite de intentos (fuerza bruta) ni recuperación de contraseña por mail.
+*   Cualquiera que sepa el email de una cuenta que venía de Google y todavía no se registró puede registrarse primero y quedarse con esos datos.
 *   Cambiar `dia_cobro` puede mover el ciclo y dejar ingresos extra en la configuración anterior.

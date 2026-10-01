@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AlertCircle, Clock3, LogOut, Moon, Settings, Sun, X } from 'lucide-react'
 import Dashboard from './components/Dashboard'
 import ExpenseInput from './components/ExpenseInput'
@@ -22,7 +22,8 @@ import {
   editarIngreso,
   borrarIngreso,
   haySesion,
-  loginConGoogle,
+  entrar,
+  registrarse,
   cerrarSesion,
 } from './api/client'
 
@@ -61,7 +62,6 @@ function App() {
 
   const salir = () => {
     cerrarSesion()
-    window.google?.accounts.id.disableAutoSelect()
     setConSesion(false)
     setDashboard(null)
     setShowConfig(false)
@@ -96,18 +96,22 @@ function App() {
     else setCargando(false)
   }, [conSesion])
 
-  const handleCredential = useCallback(async (credential) => {
+  const conLogin = async (llamada) => {
     setEntrando(true)
     setErrorLogin(null)
     try {
-      await loginConGoogle(credential)
+      await llamada()
       setConSesion(true)
     } catch (err) {
-      setErrorLogin(mensajeDeError(err))
+      setErrorLogin(
+        err.response?.status === 422
+          ? 'Revisá los datos: el email tiene que ser válido y la contraseña de al menos 8 caracteres.'
+          : mensajeDeError(err),
+      )
     } finally {
       setEntrando(false)
     }
-  }, [])
+  }
 
   // Ejecuta una llamada que devuelve el dashboard. Devuelve true si salió bien, así
   // los componentes solo limpian sus inputs cuando el dato quedó guardado.
@@ -176,7 +180,12 @@ function App() {
       )}
 
       {!conSesion && (
-        <LoginScreen tema={tema} entrando={entrando} error={errorLogin} onCredential={handleCredential} />
+        <LoginScreen
+          entrando={entrando}
+          error={errorLogin}
+          onEntrar={(datos) => conLogin(() => entrar(datos))}
+          onRegistrarse={(datos) => conLogin(() => registrarse(datos))}
+        />
       )}
 
       {conSesion && cargando && !dashboard && (

@@ -1,8 +1,8 @@
-"""Asocia una cuenta de Google a los datos de antes del login (usuario id=1).
+"""Asocia una cuenta a los datos de antes del login (usuario id=1).
 
-Sirve si alguien entró con Google antes de que MANGO_EMAIL_USUARIO_INICIAL estuviera
-bien configurado: el login le creó un usuario nuevo y vacío. Este script le pasa esa
-cuenta de Google al usuario id=1 y borra el usuario vacío.
+Sirve si alguien se registró antes de que MANGO_EMAIL_USUARIO_INICIAL estuviera
+bien configurado: el registro le creó un usuario nuevo y vacío. Este script le pasa esa
+cuenta (email y contraseña) al usuario id=1 y borra el usuario vacío.
 
 Uso (desde backend/, con el venv activado):
 
@@ -33,7 +33,7 @@ def asociar(url: str, email: str) -> None:
         inicial = db.get(models.Usuario, 1)
         if inicial is None:
             raise ErrorAsociacion("No existe el usuario id=1.")
-        if inicial.google_sub is not None:
+        if inicial.email is not None:
             raise ErrorAsociacion(f"El usuario id=1 ya está asociado a {inicial.email}.")
 
         nuevo = (
@@ -42,21 +42,21 @@ def asociar(url: str, email: str) -> None:
             .one_or_none()
         )
         if nuevo is None:
-            raise ErrorAsociacion(f"No hay ningún usuario que haya entrado con {email}.")
+            raise ErrorAsociacion(f"No hay ningún usuario registrado con {email}.")
         if nuevo.configuraciones or nuevo.transacciones:
             raise ErrorAsociacion(
                 f"El usuario {nuevo.id} ({nuevo.email}) ya tiene datos cargados; no lo borro."
             )
 
-        google_sub, email_real, nombre = nuevo.google_sub, nuevo.email, nuevo.nombre
+        email_real, password_hash, nombre = nuevo.email, nuevo.password_hash, nuevo.nombre
         db.delete(nuevo)
-        db.flush()  # libera el google_sub (es único) antes de dárselo al id=1
-        inicial.google_sub, inicial.email, inicial.nombre = google_sub, email_real, nombre
+        db.flush()  # libera el email (es único) antes de dárselo al id=1
+        inicial.email, inicial.password_hash, inicial.nombre = email_real, password_hash, nombre
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Asocia una cuenta de Google a los datos de antes del login.")
-    parser.add_argument("--email", required=True, help="email de Google con el que entraste")
+    parser = argparse.ArgumentParser(description="Asocia una cuenta a los datos de antes del login.")
+    parser.add_argument("--email", required=True, help="email con el que te registraste")
     args = parser.parse_args()
 
     url = getpass.getpass("URL de la base (postgresql://...): ").strip()
@@ -65,7 +65,7 @@ def main():
     except ErrorAsociacion as e:
         print(f"No hice nada: {e}")
         sys.exit(1)
-    print("Listo: tus datos de antes quedaron en tu cuenta de Google. Recargá Mango.")
+    print("Listo: tus datos de antes quedaron en tu cuenta. Recargá Mango.")
 
 
 if __name__ == "__main__":
