@@ -28,7 +28,11 @@ export function cerrarSesion() {
   }
 }
 
+// El server corre en UTC: con la zona del navegador sabe qué día es "hoy" para vos.
+const ZONA_HORARIA = Intl.DateTimeFormat().resolvedOptions().timeZone
+
 api.interceptors.request.use((config) => {
+  if (ZONA_HORARIA) config.headers['X-Zona-Horaria'] = ZONA_HORARIA
   const token = leerToken()
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config

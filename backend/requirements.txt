@@ -5,3 +5,4 @@ pydantic==2.13.4
 alembic==1.20.0
 psycopg[binary]==3.3.6
 pyjwt==2.15.1
+tzdata==2026.4  # zonas horarias en Windows; en Linux ya vienen con el sistema

@@ -1,4 +1,5 @@
-from datetime import date
+from datetime import date, datetime, timezone
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from fastapi import Depends, Header, HTTPException
 from sqlalchemy.orm import Session
@@ -23,10 +24,29 @@ def get_usuario_actual(
     return usuario
 
 
-def get_hoy() -> date:
-    """Fecha de "hoy" para el request. Centralizada acá para poder fijarla en los tests
-    y, más adelante, calcularla según la zona horaria del usuario."""
-    return date.today()
+# Si el navegador no manda su zona (o manda una que no existe), se usa la de Argentina.
+ZONA_POR_DEFECTO = ZoneInfo("America/Argentina/Buenos_Aires")
+
+
+def _ahora_utc() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def _zona(nombre: str | None) -> ZoneInfo:
+    if not nombre or len(nombre) > 64:
+        return ZONA_POR_DEFECTO
+    try:
+        return ZoneInfo(nombre)
+    except (ZoneInfoNotFoundError, ValueError):
+        return ZONA_POR_DEFECTO
+
+
+def get_hoy(x_zona_horaria: str | None = Header(default=None)) -> date:
+    """Fecha de "hoy" para el usuario, según la zona horaria que manda su navegador en el
+    header X-Zona-Horaria (ej. "America/Argentina/Buenos_Aires"). El server corre en UTC:
+    sin esto, después de las 21 hs de Argentina ya sería "mañana". Centralizada acá para
+    poder fijarla en los tests."""
+    return _ahora_utc().astimezone(_zona(x_zona_horaria)).date()
 
 
 def dashboard_o_404(db: Session, usuario: models.Usuario, hoy: date) -> dict:

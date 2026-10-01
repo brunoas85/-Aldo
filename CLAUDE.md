@@ -63,6 +63,8 @@ Todas las mutaciones devuelven el **`DashboardOut` completo**, así el frontend 
 
 **Sesión:** cada usuario se registra y entra con email y contraseña (hasheada con scrypt; el email se guarda en minúsculas). Recibe un token de sesión propio (JWT, 60 días) que el frontend guarda en `localStorage` y manda como `Authorization: Bearer <token>`. Todas las rutas salvo `/api/auth/*` y `/api/health` lo exigen, y sin él (o vencido) responden `401`. Cada usuario ve y toca solo sus datos: un id ajeno da `404`.
 
+**Zona horaria:** el frontend manda `X-Zona-Horaria` (la del navegador, ej. `America/Argentina/Buenos_Aires`) en cada request y `get_hoy` calcula "hoy" con esa zona. Sin header o con una zona inválida, usa la de Argentina.
+
 | Método | Ruta | Body | Notas |
 |---|---|---|---|
 | `POST` | `/api/auth/registro` | `{nombre, email, password (min 8)}` | Devuelve `{token, nombre, email}`. 409 si el email ya tiene contraseña. Si el email era de una cuenta de Google (sin contraseña), se queda con sus datos |
@@ -98,7 +100,6 @@ Hay dos subagentes definidos en `.claude/agents/`, cada uno con sus reglas espec
 ---
 
 ## 🗺️ Pendientes conocidos
-*   Zona horaria: hoy se usa `date.today()` del servidor. Falta respetar la zona del usuario.
 *   La plata se guarda como `Float`. Conviene migrar a centavos (`Integer`) o `Numeric`.
 *   No hay tests de frontend.
 *   El login no tiene límite de intentos (fuerza bruta) ni recuperación de contraseña por mail.
