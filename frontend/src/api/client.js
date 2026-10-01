@@ -50,6 +50,8 @@ export const registrarse = (datos) => api.post('/auth/registro', datos).then(gua
 
 export const getDashboard = () => api.get('/dashboard').then((res) => res.data)
 
+export const getResumen = () => api.get('/resumen').then((res) => res.data)
+
 export const saveConfig = (data) => api.post('/config', data).then((res) => res.data)
 
 export const registrarGasto = (data) => api.post('/gastos', data).then((res) => res.data)

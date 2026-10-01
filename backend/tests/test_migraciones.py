@@ -23,7 +23,7 @@ def test_base_vieja_sin_alembic_se_migra_sin_perder_datos(client_anonimo, alembi
     aplicar_migraciones()
 
     with engine.connect() as conn:
-        assert conn.execute(text("SELECT version_num FROM alembic_version")).scalar() == "0004"
+        assert conn.execute(text("SELECT version_num FROM alembic_version")).scalar() == "0005"
         assert conn.execute(text("SELECT count(*) FROM configuraciones_mensuales")).scalar() == 1
     indices = {i["name"] for i in inspect(engine).get_indexes("configuraciones_mensuales")}
     assert "uq_config_usuario_ciclo" in indices
@@ -33,7 +33,7 @@ def test_aplicar_migraciones_es_idempotente(client_anonimo):
     aplicar_migraciones()
     aplicar_migraciones()
     with engine.connect() as conn:
-        assert conn.execute(text("SELECT version_num FROM alembic_version")).scalar() == "0004"
+        assert conn.execute(text("SELECT version_num FROM alembic_version")).scalar() == "0005"
 
 
 def test_usuarios_de_google_conservan_sus_datos_sin_contrasena(client_anonimo, alembic_cfg):

@@ -69,11 +69,14 @@ Todas las mutaciones devuelven el **`DashboardOut` completo**, así el frontend 
 | `POST` | `/api/auth/login` | `{email, password}` | Devuelve `{token, nombre, email}`. 401 si no coinciden o si la cuenta era de Google y todavía no se registró |
 | `GET` | `/api/dashboard` | — | 404 si nunca se configuró |
 | `POST` | `/api/config` | `{ingresos_mensuales>0, dia_cobro 1-31, meta_ahorro>=0, gastos_fijos:[{nombre, monto>0, categoria?}]}` | Crea o actualiza la config del ciclo actual |
-| `POST` | `/api/gastos` | `{monto>0, descripcion?}` | Fecha = hoy |
-| `PUT` / `DELETE` | `/api/gastos/{id}` | `{monto>0, descripcion?}` | |
+| `POST` | `/api/gastos` | `{monto>0, descripcion?, categoria?}` | Fecha = hoy. `categoria`: Súper, Panadería, Comida afuera, Transporte, Salidas u Otros |
+| `PUT` / `DELETE` | `/api/gastos/{id}` | `{monto>0, descripcion?, categoria?}` | Si no viene `categoria`, se deja la que tenía |
+| `GET` | `/api/resumen` | — | `ResumenOut`: totales por categoría de este ciclo y del anterior, más `analisis {resumen, consejos[]}` (o `null` con un `aviso` si hay menos de 3 gastos). 404 si nunca se configuró |
 | `POST` | `/api/ingresos` | `{monto>0, descripcion?}` | Ingreso extra del ciclo |
 | `PUT` / `DELETE` | `/api/ingresos/{id}` | `{monto>0, descripcion?}` | |
 | `GET` | `/api/health` | — | No pide sesión |
+
+**Consejos del resumen:** salen de reglas fijas en `backend/app/resumen.py` (sin servicios pagos): una categoría aparece si su ritmo diario sube un 20% contra el ciclo anterior o si se lleva al menos el 25% de lo gastado, con un consejo concreto por categoría (`TIPS`).
 
 **API externa:** las cotizaciones (dólar oficial/blue/MEP/tarjeta y peso chileno) se piden directo desde el navegador a `dolarapi.com` (`frontend/src/api/cotizaciones.js`), con caché de 30 min en `localStorage`. No pasan por el backend.
 

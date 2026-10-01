@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.migraciones import aplicar_migraciones
-from app.routers import auth, config, dashboard, gastos, ingresos
+from app.routers import auth, config, dashboard, gastos, ingresos, resumen
 
 
 @asynccontextmanager
@@ -28,7 +28,7 @@ app.add_middleware(
 )
 
 # Las rutas de datos piden sesión a través de get_usuario_actual; /api/auth y /api/health no.
-for router in (auth.router, config.router, dashboard.router, gastos.router, ingresos.router):
+for router in (auth.router, config.router, dashboard.router, gastos.router, ingresos.router, resumen.router):
     app.include_router(router)
 
 

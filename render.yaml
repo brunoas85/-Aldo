@@ -16,7 +16,7 @@ services:
       - key: MANGO_DATABASE_URL
         sync: false # connection string de Neon: postgresql://...?sslmode=require
       - key: MANGO_CORS_ORIGINS
-        sync: false # URL del frontend en Vercel, ej. https://mango.vercel.app
+        sync: false # URL del frontend en Vercel: https://tu-mango.vercel.app (separadas por coma si hay varias)
       - key: MANGO_EMAIL_USUARIO_INICIAL
         sync: false # email que, al registrarse, se queda con los datos de antes del login
       - key: MANGO_SECRET

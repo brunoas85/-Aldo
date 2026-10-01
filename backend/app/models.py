@@ -73,5 +73,7 @@ class TransaccionDiaria(Base):
     fecha = Column(Date, nullable=False, index=True)
     monto = Column(Float, nullable=False)
     descripcion = Column(String, nullable=True)
+    # Una de schemas.CATEGORIAS_GASTO, o None si se cargó sin elegir.
+    categoria = Column(String, nullable=True)
 
     usuario = relationship("Usuario", back_populates="transacciones")

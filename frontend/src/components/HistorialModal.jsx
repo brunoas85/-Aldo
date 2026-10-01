@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Check, Pencil, Trash2, X } from 'lucide-react'
+import { CATEGORIAS_GASTO } from '../categorias'
 
 const formatMonto = (valor) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(valor)
@@ -11,17 +12,20 @@ function MovimientoRow({ movimiento, onEdit, onDelete }) {
   const [editando, setEditando] = useState(false)
   const [monto, setMonto] = useState(movimiento.monto)
   const [descripcion, setDescripcion] = useState(movimiento.descripcion || '')
+  const [categoria, setCategoria] = useState(movimiento.categoria || '')
   const esGasto = movimiento.tipo === 'gasto'
 
   const guardar = async () => {
     const valor = Number(monto)
     if (!(valor > 0)) return
-    if (await onEdit(movimiento.id, { monto: valor, descripcion: descripcion.trim() || null })) setEditando(false)
+    const payload = { monto: valor, descripcion: descripcion.trim() || null }
+    if (esGasto) payload.categoria = categoria || null
+    if (await onEdit(movimiento.id, payload)) setEditando(false)
   }
 
   if (editando) {
     return (
-      <div className="flex items-center gap-2 py-2">
+      <div className="flex flex-wrap items-center gap-2 py-2">
         <input
           type="number"
           inputMode="decimal"
@@ -37,6 +41,21 @@ function MovimientoRow({ movimiento, onEdit, onDelete }) {
           placeholder="Descripción"
           className="min-w-0 flex-1 rounded-lg border border-gray-300 px-2 py-1.5 text-sm"
         />
+        {esGasto && (
+          <select
+            value={categoria}
+            onChange={(e) => setCategoria(e.target.value)}
+            aria-label="Categoría"
+            className="w-full rounded-lg border border-gray-300 bg-mango-card px-2 py-1.5 text-sm"
+          >
+            <option value="">Sin categoría</option>
+            {CATEGORIAS_GASTO.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        )}
         <button
           type="button"
           onClick={guardar}
@@ -52,8 +71,13 @@ function MovimientoRow({ movimiento, onEdit, onDelete }) {
   return (
     <div className="flex items-center justify-between gap-2 py-2">
       <div className="min-w-0">
-        <p className="truncate text-sm text-gray-700">{movimiento.descripcion || (esGasto ? 'Gasto' : 'Ingreso')}</p>
-        <p className="text-xs text-gray-400">{formatFecha(movimiento.fecha)}</p>
+        <p className="truncate text-sm text-gray-700">
+          {movimiento.descripcion || (esGasto ? movimiento.categoria || 'Gasto' : 'Ingreso')}
+        </p>
+        <p className="text-xs text-gray-400">
+          {formatFecha(movimiento.fecha)}
+          {movimiento.categoria && ` · ${movimiento.categoria}`}
+        </p>
       </div>
       <div className="flex shrink-0 items-center gap-1">
         <span className={`text-sm font-semibold tabular-nums ${esGasto ? 'text-red-500' : 'text-emerald-600'}`}>

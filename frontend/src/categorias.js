@@ -1,4 +1,4 @@
-import { Banknote, Car, HeartPulse, Home, Repeat, Zap } from 'lucide-react'
+import { Banknote, Beer, Bus, Car, Croissant, HeartPulse, Home, Repeat, ShoppingCart, UtensilsCrossed, Zap } from 'lucide-react'
 
 export const CATEGORIAS = ['Alquiler', 'Servicios', 'Suscripciones', 'Transporte', 'Salud', 'Otros']
 
@@ -20,4 +20,16 @@ export const COLOR_CATEGORIA = {
   Transporte: '#008300',
   Salud: '#4a3aa7',
   Otros: '#e34948',
+}
+
+// Categorías de los gastos del día. Tienen que coincidir con CATEGORIAS_GASTO del backend.
+export const CATEGORIAS_GASTO = ['Súper', 'Panadería', 'Comida afuera', 'Transporte', 'Salidas', 'Otros']
+
+export const ICONO_CATEGORIA_GASTO = {
+  Súper: ShoppingCart,
+  Panadería: Croissant,
+  'Comida afuera': UtensilsCrossed,
+  Transporte: Bus,
+  Salidas: Beer,
+  Otros: Banknote,
 }

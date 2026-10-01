@@ -1,6 +1,6 @@
 from datetime import date
 
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field, field_validator
 
@@ -53,9 +53,15 @@ class ConfigIn(BaseModel):
     gastos_fijos: list[GastoFijoIn] = []
 
 
+CATEGORIAS_GASTO = ("Súper", "Panadería", "Comida afuera", "Transporte", "Salidas", "Otros")
+CategoriaGasto = Literal[CATEGORIAS_GASTO]
+
+
 class GastoIn(BaseModel):
     monto: float = Field(gt=0)
     descripcion: str | None = None
+    # En un PUT, si no viene, se deja la que tenía.
+    categoria: CategoriaGasto | None = None
 
 
 class GastoOut(BaseModel):
@@ -65,6 +71,7 @@ class GastoOut(BaseModel):
     fecha: date
     monto: float
     descripcion: str | None
+    categoria: str | None
 
 
 class IngresoIn(BaseModel):
@@ -99,3 +106,28 @@ class DashboardOut(BaseModel):
     gastos_ciclo: list[GastoOut]
     saldo_disponible_ciclo: float
     sugerencias: list[str]
+
+
+class CategoriaResumenOut(BaseModel):
+    categoria: str
+    total: float
+    cantidad: int
+    total_ciclo_anterior: float
+
+
+class AnalisisOut(BaseModel):
+    resumen: str
+    consejos: list[str]
+
+
+class ResumenOut(BaseModel):
+    inicio_ciclo: date
+    fin_ciclo: date
+    dias_transcurridos: int
+    dias_totales_ciclo: int
+    total_gastado: float
+    total_ciclo_anterior: float
+    categorias: list[CategoriaResumenOut]
+    # None si todavía no hay suficientes gastos; ahí se explica en `aviso`.
+    analisis: AnalisisOut | None
+    aviso: str | None

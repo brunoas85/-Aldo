@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
-import { AlertCircle, Clock3, LogOut, Moon, Settings, Sun, X } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
+import { AlertCircle, ChartBar, Clock3, LogOut, Moon, Settings, Sun, X } from 'lucide-react'
 import Dashboard from './components/Dashboard'
 import ExpenseInput from './components/ExpenseInput'
 import ConfigWizard from './components/ConfigWizard'
 import IngresoModal from './components/IngresoModal'
 import HistorialModal from './components/HistorialModal'
+import ResumenModal from './components/ResumenModal'
 import SugerenciasList from './components/SugerenciasList'
 import GastosFijosList from './components/GastosFijosList'
 import GastoPorDiaChart from './components/GastoPorDiaChart'
@@ -14,6 +15,7 @@ import LoginScreen from './components/LoginScreen'
 import useTema from './useTema'
 import {
   getDashboard,
+  getResumen,
   saveConfig,
   registrarGasto,
   editarGasto,
@@ -47,6 +49,7 @@ function App() {
   const [showConfig, setShowConfig] = useState(false)
   const [showIngreso, setShowIngreso] = useState(false)
   const [showHistorial, setShowHistorial] = useState(false)
+  const [showResumen, setShowResumen] = useState(false)
   const { tema, alternarTema } = useTema()
   const [conSesion, setConSesion] = useState(haySesion)
   const [entrando, setEntrando] = useState(false)
@@ -67,6 +70,7 @@ function App() {
     setShowConfig(false)
     setShowIngreso(false)
     setShowHistorial(false)
+    setShowResumen(false)
     setError(null)
   }
 
@@ -132,7 +136,18 @@ function App() {
     return ok
   }
 
-  const handleAddGasto = (monto) => conDashboard(() => registrarGasto({ monto }))
+  const handleAddGasto = (monto, categoria) => conDashboard(() => registrarGasto({ monto, categoria }))
+
+  // El modal muestra su propio error; un 401 igual te manda al login.
+  const cargarResumen = useCallback(
+    () =>
+      getResumen().catch((err) => {
+        if (err.response?.status === 401) salir()
+        throw mensajeDeError(err)
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  )
 
   const handleEditGasto = (id, payload) => conDashboard(() => editarGasto(id, payload))
 
@@ -159,7 +174,7 @@ function App() {
     : 0
 
   return (
-    <main className="flex min-h-svh flex-col items-center gap-6 px-4 pb-32 pt-10">
+    <main className="flex min-h-svh flex-col items-center gap-6 px-4 pb-44 pt-10">
       {error && (
         <div
           role="alert"
@@ -233,6 +248,14 @@ function App() {
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
             <button
               type="button"
+              onClick={() => setShowResumen(true)}
+              className="flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-700"
+            >
+              <ChartBar size={15} />
+              Resumen del ciclo
+            </button>
+            <button
+              type="button"
               onClick={() => setShowHistorial(true)}
               className="flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-700"
             >
@@ -267,6 +290,7 @@ function App() {
         onClose={dashboard ? () => setShowConfig(false) : undefined}
         initialData={dashboard}
       />
+      <ResumenModal open={showResumen} onClose={() => setShowResumen(false)} cargar={cargarResumen} />
       <IngresoModal open={showIngreso} onSave={handleAddIngreso} onClose={() => setShowIngreso(false)} />
       {dashboard && (
         <HistorialModal

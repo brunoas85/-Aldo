@@ -32,6 +32,7 @@ def registrar_gasto(
         fecha=hoy,
         monto=payload.monto,
         descripcion=payload.descripcion,
+        categoria=payload.categoria,
     )
     db.add(gasto)
     db.commit()
@@ -50,6 +51,8 @@ def editar_gasto(
     gasto = _obtener_gasto_del_usuario(db, gasto_id, usuario)
     gasto.monto = payload.monto
     gasto.descripcion = payload.descripcion
+    if "categoria" in payload.model_fields_set:
+        gasto.categoria = payload.categoria
     db.commit()
 
     return dashboard_o_404(db, usuario, hoy)

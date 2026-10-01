@@ -52,7 +52,7 @@ def test_copia_todo_con_los_mismos_ids(origen_con_datos, tmp_path):
         version = conn.execute(text("SELECT version_num FROM alembic_version")).scalar()
     engine.dispose()
     assert tuple(gasto) == ("2026-09-01", 1500.0, "café")
-    assert version == "0004"
+    assert version == "0005"
 
 
 def test_no_copia_si_el_destino_ya_tiene_datos(origen_con_datos, tmp_path):
